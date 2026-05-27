@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>tus.io Resumable Upload Demo</title>
+    <style>
+        body { font-family: system-ui, sans-serif; max-width: 720px; margin: 40px auto; padding: 0 16px; }
+        .row { margin: 16px 0; }
+        progress { width: 100%; height: 24px; }
+        #log { background: #111; color: #0f0; padding: 12px; font-family: monospace; font-size: 12px; height: 200px; overflow: auto; white-space: pre-wrap; }
+        button { padding: 6px 12px; margin-right: 8px; }
+    </style>
+</head>
+<body>
+    <h1>tus.io Resumable Upload Demo</h1>
+    <p>Backend endpoint: <code id="endpoint">http://localhost:3370/files</code></p>
+    <div class="row">
+        <input id="file" type="file" />
+    </div>
+    <div class="row">
+        <button id="start">Start / Resume</button>
+        <button id="pause">Pause</button>
+    </div>
+    <div class="row">
+        <progress id="progress" value="0" max="100"></progress>
+        <span id="percent">0%</span>
+    </div>
+    <div class="row">
+        <strong>Log:</strong>
+        <div id="log"></div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/tus-js-client@4.1.0/dist/tus.min.js"></script>
+    <script>
+        // Endpoint tus mount ở backend NestJS (EN: tus endpoint mounted on NestJS backend)
+        var ENDPOINT = "http://localhost:3370/files"
+        var upload = null
+        var logEl = document.getElementById("log")
+        var progressEl = document.getElementById("progress")
+        var percentEl = document.getElementById("percent")
+        function log(msg) {
+            var ts = new Date().toISOString().slice(11, 19)
+            logEl.textContent += "[" + ts + "] " + msg + "\n"
+            logEl.scrollTop = logEl.scrollHeight
+        }
+        document.getElementById("start").addEventListener("click", function () {
+            var fileInput = document.getElementById("file")
+            if (!fileInput.files.length) { log("No file selected"); return }
+            var file = fileInput.files[0]
+            // tus-js-client tự fingerprint file + lưu uploadUrl trong localStorage để resume.
+            // (EN: tus-js-client fingerprints file + persists uploadUrl in localStorage to resume.)
+            upload = new tus.Upload(file, {
+                endpoint: ENDPOINT,
+                retryDelays: [0, 1000, 3000, 5000],
+                metadata: { filename: file.name, filetype: file.type },
+                chunkSize: 5 * 1024 * 1024,
+                onError: function (err) { log("ERROR: " + err) },
+                onProgress: function (bytesUploaded, bytesTotal) {
+                    var pct = ((bytesUploaded / bytesTotal) * 100).toFixed(1)
+                    progressEl.value = pct
+                    percentEl.textContent = pct + "%"
+                },
+                onSuccess: function () {
+                    log("SUCCESS uploadUrl=" + upload.url)
+                },
+                onAfterResponse: function (req, res) {
+                    var off = res.getHeader("Upload-Offset")
+                    log(req.getMethod() + " " + req.getURL() + " -> " + res.getStatus() + (off ? " Upload-Offset=" + off : ""))
+                },
+            })
+            upload.findPreviousUploads().then(function (previousUploads) {
+                if (previousUploads.length) {
+                    log("Resuming from prior upload: " + previousUploads[0].uploadUrl)
+                    upload.resumeFromPreviousUpload(previousUploads[0])
+                }
+                upload.start()
+            })
+        })
+        document.getElementById("pause").addEventListener("click", function () {
+            if (upload) { upload.abort(); log("Paused") }
+        })
+    </script>
+</body>
+</html>
