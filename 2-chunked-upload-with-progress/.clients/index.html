@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Chunked Upload Demo</title>
+    <style>
+        body { font-family: system-ui, sans-serif; padding: 16px; max-width: 720px; margin: 0 auto; }
+        .row { display: flex; align-items: center; gap: 8px; margin: 4px 0; }
+        .bar { flex: 1; background: #eee; height: 14px; border-radius: 4px; overflow: hidden; }
+        .fill { background: #1e88e5; height: 100%; width: 0%; transition: width 80ms linear; }
+        .fill.done { background: #43a047; }
+        .label { width: 110px; font-size: 12px; }
+        button { padding: 6px 12px; }
+        #log { font-family: monospace; font-size: 12px; white-space: pre-wrap; background: #f5f5f5; padding: 8px; border-radius: 4px; max-height: 240px; overflow: auto; }
+    </style>
+</head>
+<body>
+<h2>Chunked Upload with Progress</h2>
+<p>
+    Backend: <input id="backend" value="http://localhost:3000" size="32">
+    Session: <input id="sessionId" placeholder="(auto)" size="36">
+</p>
+<p>
+    <input type="file" id="file">
+    <button id="start">Start upload</button>
+    <button id="resume">Resume upload</button>
+    <button id="abort">Abort</button>
+</p>
+<div id="overall" class="row">
+    <span class="label">Total</span>
+    <div class="bar"><div class="fill" id="overallFill"></div></div>
+    <span id="overallText">0%</span>
+</div>
+<div id="chunks"></div>
+<h4>Log</h4>
+<pre id="log"></pre>
+<script>
+const $ = (id) => document.getElementById(id);
+const log = (m) => { $("log").textContent += m + "\n"; $("log").scrollTop = $("log").scrollHeight; };
+let xhrPool = [];
+let aborted = false;
+
+function chunkRows(n) {
+    const c = $("chunks"); c.innerHTML = "";
+    for (let i = 0; i < n; i++) {
+        const row = document.createElement("div");
+        row.className = "row";
+        row.innerHTML = `<span class="label">Chunk ${i}</span><div class="bar"><div class="fill" id="fill-${i}"></div></div><span id="pct-${i}">0%</span>`;
+        c.appendChild(row);
+    }
+}
+
+async function initSession(file) {
+    const r = await fetch($("backend").value + "/uploads/init", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ filename: file.name, size: file.size }),
+    });
+    if (!r.ok) throw new Error("init failed: " + r.status);
+    return r.json();
+}
+
+async function getStatus(id) {
+    const r = await fetch($("backend").value + `/uploads/${id}/status`);
+    if (!r.ok) throw new Error("status failed: " + r.status);
+    return r.json();
+}
+
+function putChunk(id, index, blob) {
+    return new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhrPool.push(xhr);
+        xhr.open("PATCH", $("backend").value + `/uploads/${id}/chunks?index=${index}`);
+        xhr.setRequestHeader("Content-Type", "application/octet-stream");
+        xhr.upload.onprogress = (e) => {
+            if (!e.lengthComputable) return;
+            const pct = Math.round((e.loaded / e.total) * 100);
+            const f = $("fill-" + index); if (f) f.style.width = pct + "%";
+            const t = $("pct-" + index); if (t) t.textContent = pct + "%";
+        };
+        xhr.onload = () => {
+            if (xhr.status >= 200 && xhr.status < 300) {
+                const f = $("fill-" + index); if (f) { f.style.width = "100%"; f.classList.add("done"); }
+                const t = $("pct-" + index); if (t) t.textContent = "100%";
+                resolve();
+            } else reject(new Error("chunk " + index + " status " + xhr.status));
+        };
+        xhr.onerror = () => reject(new Error("chunk " + index + " network error"));
+        xhr.onabort = () => reject(new Error("chunk " + index + " aborted"));
+        xhr.send(blob);
+    });
+}
+
+async function finalize(id) {
+    const r = await fetch($("backend").value + `/uploads/${id}/finalize`, { method: "POST" });
+    if (!r.ok) throw new Error("finalize failed: " + r.status);
+    return r.json();
+}
+
+function updateOverall(received, total) {
+    const pct = Math.round((received / total) * 100);
+    $("overallFill").style.width = pct + "%";
+    $("overallText").textContent = pct + "%";
+}
+
+$("start").onclick = async () => {
+    aborted = false; xhrPool = [];
+    const file = $("file").files[0];
+    if (!file) return alert("Pick a file first");
+    try {
+        const init = await initSession(file);
+        $("sessionId").value = init.sessionId;
+        log(`[init] sessionId=${init.sessionId} totalChunks=${init.totalChunks} chunkSize=${init.chunkSize}`);
+        chunkRows(init.totalChunks);
+        let done = 0;
+        for (let i = 0; i < init.totalChunks; i++) {
+            if (aborted) { log(`[abort] stopped at chunk ${i}`); return; }
+            const start = i * init.chunkSize;
+            const end = Math.min(start + init.chunkSize, file.size);
+            await putChunk(init.sessionId, i, file.slice(start, end));
+            done++; updateOverall(done, init.totalChunks);
+            log(`[chunk ${i}/${init.totalChunks}] ok (${end - start}B)`);
+        }
+        const fin = await finalize(init.sessionId);
+        log(`[finalize] path=${fin.path} sha256=${fin.sha256} size=${fin.size}`);
+    } catch (e) {
+        log(`[error] ${e.message}`);
+    }
+};
+
+$("resume").onclick = async () => {
+    aborted = false; xhrPool = [];
+    const file = $("file").files[0];
+    const id = $("sessionId").value.trim();
+    if (!file || !id) return alert("Need both file and sessionId");
+    try {
+        const st = await getStatus(id);
+        log(`[resume] existing=[${st.received.join(",")}] missing=[${st.missing.join(",")}]`);
+        chunkRows(st.totalChunks);
+        for (const i of st.received) {
+            const f = $("fill-" + i); if (f) { f.style.width = "100%"; f.classList.add("done"); }
+            const t = $("pct-" + i); if (t) t.textContent = "skip";
+        }
+        let done = st.received.length;
+        updateOverall(done, st.totalChunks);
+        for (const i of st.missing) {
+            if (aborted) return;
+            const start = i * st.chunkSize;
+            const end = Math.min(start + st.chunkSize, file.size);
+            await putChunk(id, i, file.slice(start, end));
+            done++; updateOverall(done, st.totalChunks);
+            log(`[chunk ${i}/${st.totalChunks}] ok (${end - start}B)`);
+        }
+        const fin = await finalize(id);
+        log(`[finalize] path=${fin.path} sha256=${fin.sha256} size=${fin.size}`);
+    } catch (e) {
+        log(`[error] ${e.message}`);
+    }
+};
+
+$("abort").onclick = () => {
+    aborted = true;
+    for (const x of xhrPool) try { x.abort(); } catch {}
+    log("[abort] requested");
+};
+</script>
+</body>
+</html>
