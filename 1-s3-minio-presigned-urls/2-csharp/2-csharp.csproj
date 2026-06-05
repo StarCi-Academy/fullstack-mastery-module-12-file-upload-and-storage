@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>PresignApp</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- AWS SDK S3 for MinIO-compatible presigned URL generation -->
+    <PackageReference Include="AWSSDK.S3" Version="3.7.307.4" />
+  </ItemGroup>
+
+</Project>

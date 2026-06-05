@@ -1,0 +1,16 @@
+server:
+  port: 3000
+
+spring:
+  mvc:
+    # Disable default DispatcherServlet multipart to allow raw binary PATCH bodies
+    throw-exception-if-no-handler-found: true
+  web:
+    resources:
+      add-mappings: false
+
+upload:
+  tmp-dir: ${UPLOAD_TMP_DIR:tmp}
+  final-dir: ${UPLOAD_FINAL_DIR:uploads}
+  chunk-size-bytes: ${UPLOAD_CHUNK_SIZE_BYTES:5242880}
+  max-file-bytes: ${UPLOAD_MAX_FILE_BYTES:1073741824}

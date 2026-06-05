@@ -1,0 +1,15 @@
+server:
+  port: 3000
+
+# S3 / MinIO configuration — values are overridden by environment variables at runtime.
+# ENV vars match the TypeScript contract exactly:
+#   S3_ENDPOINT, S3_REGION, S3_ACCESS_KEY, S3_SECRET_KEY,
+#   S3_BUCKET, S3_FORCE_PATH_STYLE, S3_PRESIGN_EXPIRES_SECONDS
+s3:
+  endpoint: ${S3_ENDPOINT:http://localhost:9000}
+  region: ${S3_REGION:us-east-1}
+  access-key: ${S3_ACCESS_KEY:minioadmin}
+  secret-key: ${S3_SECRET_KEY:minioadmin}
+  bucket: ${S3_BUCKET:uploads}
+  force-path-style: ${S3_FORCE_PATH_STYLE:true}
+  presign-expires-seconds: ${S3_PRESIGN_EXPIRES_SECONDS:300}
