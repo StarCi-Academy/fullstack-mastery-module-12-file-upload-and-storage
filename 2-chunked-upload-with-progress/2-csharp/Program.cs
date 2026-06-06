@@ -41,8 +41,8 @@ app.UseCors();
 // bodyParser:false + express.json({ limit:"1mb" }) configuration.
 app.Use(async (ctx, next) =>
 {
-    ctx.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpMaxRequestBodySizeFeature>()
-        ?.SetMaxRequestBodySize(null);
+    var feature = ctx.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpMaxRequestBodySizeFeature>();
+    if (feature != null) feature.MaxRequestBodySize = null;
     await next();
 });
 

@@ -1,13 +1,11 @@
 package academy.starci.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.stereotype.Component;
 
 /**
  * Typed binding of the {@code s3.*} namespace from application.yml.
  * Each field maps 1-to-1 to an env var defined in the TypeScript contract.
  */
-@Component
 @ConfigurationProperties(prefix = "s3")
 public class S3Properties {
 

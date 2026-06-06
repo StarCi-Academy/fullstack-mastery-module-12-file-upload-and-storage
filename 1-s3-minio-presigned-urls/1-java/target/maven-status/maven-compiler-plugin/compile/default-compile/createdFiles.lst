@@ -1,0 +1,9 @@
+academy\starci\config\S3Properties.class
+academy\starci\controller\PresignController.class
+academy\starci\dto\PresignGetResponse.class
+academy\starci\dto\PresignPutResponse.class
+academy\starci\PresignedUrlsApplication.class
+academy\starci\config\S3Config.class
+academy\starci\dto\PresignPutRequest.class
+academy\starci\service\S3Service$PresignedUploadResult.class
+academy\starci\service\S3Service.class

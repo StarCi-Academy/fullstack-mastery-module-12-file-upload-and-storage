@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "MSM514xS+wc=",
+  "success": true,
+  "projectFilePath": "C:\\Repositories\\ac\\starci-academy-backend\\.repo\\fullstack-mastery-module-12-file-upload-and-storage\\3-resumable-upload-tus-protocol\\2-csharp\\2-csharp.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\Cuong\\.nuget\\packages\\tusdotnet\\2.9.0\\tusdotnet.2.9.0.nupkg.sha512"
+  ],
+  "logs": []
+}

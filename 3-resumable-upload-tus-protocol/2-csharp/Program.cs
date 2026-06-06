@@ -83,8 +83,8 @@ app.UseTus(httpContext => new DefaultTusConfiguration
     // TusDiskStore persists uploads under tusDirectory — same as TS FileStore({ directory })
     Store = new TusDiskStore(tusDirectory),
 
-    // MaxAllowedUploadSizeInBytes maps to TUS_MAX_SIZE — same as TS maxSize field
-    MaxAllowedUploadSizeInBytes = tusMaxSize,
+    // MaxAllowedUploadSizeInBytes maps to TUS_MAX_SIZE — same as TS maxSize field (cast long→int?)
+    MaxAllowedUploadSizeInBytes = (int?)tusMaxSize,
 
     Events = new Events
     {

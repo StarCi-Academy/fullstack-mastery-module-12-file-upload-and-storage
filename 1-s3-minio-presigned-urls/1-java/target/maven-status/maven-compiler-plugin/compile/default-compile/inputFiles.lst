@@ -1,0 +1,8 @@
+C:\Repositories\ac\starci-academy-backend\.repo\fullstack-mastery-module-12-file-upload-and-storage\1-s3-minio-presigned-urls\1-java\src\main\java\academy\starci\config\S3Config.java
+C:\Repositories\ac\starci-academy-backend\.repo\fullstack-mastery-module-12-file-upload-and-storage\1-s3-minio-presigned-urls\1-java\src\main\java\academy\starci\config\S3Properties.java
+C:\Repositories\ac\starci-academy-backend\.repo\fullstack-mastery-module-12-file-upload-and-storage\1-s3-minio-presigned-urls\1-java\src\main\java\academy\starci\controller\PresignController.java
+C:\Repositories\ac\starci-academy-backend\.repo\fullstack-mastery-module-12-file-upload-and-storage\1-s3-minio-presigned-urls\1-java\src\main\java\academy\starci\dto\PresignGetResponse.java
+C:\Repositories\ac\starci-academy-backend\.repo\fullstack-mastery-module-12-file-upload-and-storage\1-s3-minio-presigned-urls\1-java\src\main\java\academy\starci\dto\PresignPutRequest.java
+C:\Repositories\ac\starci-academy-backend\.repo\fullstack-mastery-module-12-file-upload-and-storage\1-s3-minio-presigned-urls\1-java\src\main\java\academy\starci\dto\PresignPutResponse.java
+C:\Repositories\ac\starci-academy-backend\.repo\fullstack-mastery-module-12-file-upload-and-storage\1-s3-minio-presigned-urls\1-java\src\main\java\academy\starci\PresignedUrlsApplication.java
+C:\Repositories\ac\starci-academy-backend\.repo\fullstack-mastery-module-12-file-upload-and-storage\1-s3-minio-presigned-urls\1-java\src\main\java\academy\starci\service\S3Service.java

@@ -4,11 +4,11 @@ import academy.starci.config.S3Properties;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
-import software.amazon.awssdk.services.s3.presign.S3Presigner;
-import software.amazon.awssdk.services.s3.presign.PresignedPutObjectRequest;
-import software.amazon.awssdk.services.s3.presign.PresignedGetObjectRequest;
-import software.amazon.awssdk.services.s3.presign.PutObjectPresignRequest;
-import software.amazon.awssdk.services.s3.presign.GetObjectPresignRequest;
+import software.amazon.awssdk.services.s3.presigner.S3Presigner;
+import software.amazon.awssdk.services.s3.presigner.model.PresignedPutObjectRequest;
+import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequest;
+import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
+import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
 
 import java.time.Duration;
 import java.util.UUID;

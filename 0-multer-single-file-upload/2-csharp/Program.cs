@@ -1,11 +1,11 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.IO;
 using System.Text.Json;
+using KestrelServerOptions = Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerOptions;
 
 // ---------------------------------------------------------------------------
 // Environment-driven configuration (mirrors TS uploadConfig).
@@ -62,9 +62,9 @@ app.MapPost("/upload", async (HttpRequest request) =>
         form = await request.ReadFormAsync();
     }
     catch (Exception ex) when (
-        ex is BadHttpRequestException ||
+        ex is Microsoft.AspNetCore.Http.BadHttpRequestException ||
         ex is InvalidDataException ||
-        (ex.InnerException is BadHttpRequestException) ||
+        (ex.InnerException is Microsoft.AspNetCore.Http.BadHttpRequestException) ||
         (ex.InnerException is InvalidDataException) ||
         ex.Message.Contains("limit", StringComparison.OrdinalIgnoreCase) ||
         ex.Message.Contains("Multipart body length limit", StringComparison.OrdinalIgnoreCase)

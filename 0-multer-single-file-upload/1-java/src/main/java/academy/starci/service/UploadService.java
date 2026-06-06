@@ -37,8 +37,9 @@ public class UploadService {
      * @throws IOException if writing to disk fails
      */
     public UploadedFileInfo save(MultipartFile file) throws IOException {
-        // Ensure the upload directory exists.
-        Path destDir = Paths.get(uploadProperties.getDest());
+        // Ensure the upload directory exists — use absolute path so transferTo() works
+        // regardless of the JVM working directory (Tomcat temp dir under Maven).
+        Path destDir = Paths.get(uploadProperties.getDest()).toAbsolutePath();
         Files.createDirectories(destDir);
 
         // Build stored filename: <epochMillis>-<originalName>

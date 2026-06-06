@@ -1,0 +1,10 @@
+academy\starci\dto\FinalizeResponse.class
+academy\starci\model\UploadSession.class
+academy\starci\dto\InitSessionRequest.class
+academy\starci\service\UploadService.class
+academy\starci\dto\SessionStatusResponse.class
+academy\starci\ChunkedUploadApplication.class
+academy\starci\config\UploadProperties.class
+academy\starci\controller\UploadController.class
+academy\starci\dto\InitSessionResponse.class
+academy\starci\config\WebConfig.class
