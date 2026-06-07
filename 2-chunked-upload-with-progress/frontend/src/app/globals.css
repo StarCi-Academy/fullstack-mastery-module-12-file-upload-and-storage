@@ -1,18 +1,6 @@
 @import "tailwindcss";
 @import "@heroui/styles";
 
-:root,
-.light,
-[data-theme="light"] {
-  --accent: oklch(62.04% 0.1950 185.90);
-  --accent-foreground: oklch(99.11% 0 0);
-  --background: oklch(97.02% 0.0033 185.90);
-  --border: oklch(90.00% 0.0033 185.90);
-  --foreground: oklch(21.03% 0.0033 185.90);
-  --radius: 0.5rem;
-  --field-radius: 0.75rem;
-}
-
 body {
   margin: 0;
   min-height: 100vh;

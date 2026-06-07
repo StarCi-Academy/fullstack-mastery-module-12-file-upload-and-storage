@@ -1,7 +1,8 @@
-import { useRef, useState } from "react"
+import { useCallback, useState } from "react"
 import { Button, Chip, Spinner } from "@heroui/react"
 import useSWRMutation from "swr/mutation"
 import { UPLOAD_PATH, type UploadedFileInfo, type UploadErrorBody } from "../../lib"
+import { FileDropzone } from "./FileDropzone"
 
 // ---- upload status type -------------------------------------------------------
 type UploadStatus = "idle" | "uploading" | "success" | "error"
@@ -34,14 +35,14 @@ function formatBytes(bytes: number): string {
 /**
  * UploadClient — the shared upload UI used by BOTH Local (single client) and Sandbox.
  * Exposes the exact `data-testid`s the Playwright specs assert:
- *   - `file-input`      : the hidden file input element
+ *   - `file-input`      : the hidden file input element (inside FileDropzone)
  *   - `upload-btn`      : the Upload button
  *   - `upload-status`   : Chip showing idle / uploading / success / error
  *   - `result-meta`     : container with originalName, filename, size, mimetype, path
  *   - `error-msg`       : container with HTTP status code + error message
  */
 export function UploadClient(): JSX.Element {
-    const fileInputRef = useRef<HTMLInputElement>(null)
+    const [dropzoneKey, setDropzoneKey] = useState(0)
     const [selectedFile, setSelectedFile] = useState<File | null>(null)
     const [uploadStatus, setUploadStatus] = useState<UploadStatus>("idle")
     const [result, setResult] = useState<UploadedFileInfo | null>(null)
@@ -60,15 +61,14 @@ export function UploadClient(): JSX.Element {
         return "default"
     }
 
-    function handleFileChange(e: React.ChangeEvent<HTMLInputElement>): void {
-        const file = e.target.files?.[0] ?? null
+    const onFileSelect = useCallback((file: File | null): void => {
         setSelectedFile(file)
         // Reset previous results when a new file is chosen.
         setUploadStatus("idle")
         setResult(null)
         setErrorCode(null)
         setErrorMsg("")
-    }
+    }, [])
 
     async function handleUpload(): Promise<void> {
         if (!selectedFile || isMutating) return
@@ -106,7 +106,7 @@ export function UploadClient(): JSX.Element {
         setResult(null)
         setErrorCode(null)
         setErrorMsg("")
-        if (fileInputRef.current) fileInputRef.current.value = ""
+        setDropzoneKey((key) => key + 1)
     }
 
     const canUpload = selectedFile !== null && !isMutating
@@ -116,24 +116,20 @@ export function UploadClient(): JSX.Element {
             {/* Status chip */}
             <Chip
                 data-testid="upload-status"
-                variant="soft"
+                variant="secondary"
                 color={chipColor(uploadStatus)}
-                className="capitalize"
+                size="sm"
+                className="w-fit capitalize"
             >
                 {uploadStatus}
             </Chip>
 
             <div className="h-6" />
 
-            {/* File picker */}
-            <label className="text-sm font-medium text-foreground">File</label>
-            <div className="h-1.5" />
-            <input
-                data-testid="file-input"
-                ref={fileInputRef}
-                type="file"
-                onChange={handleFileChange}
-                className="block w-full text-sm text-foreground file:mr-4 file:cursor-pointer file:rounded-full file:border-0 file:bg-default-100 file:px-4 file:py-2 file:text-sm file:font-medium hover:file:bg-default-200"
+            <FileDropzone
+                key={dropzoneKey}
+                file={selectedFile}
+                onFileSelect={onFileSelect}
             />
             {selectedFile && (
                 <p className="mt-1.5 text-xs text-muted">
@@ -167,7 +163,7 @@ export function UploadClient(): JSX.Element {
                     <div className="h-6" />
                     <div
                         data-testid="result-meta"
-                        className="rounded-2xl border border-border bg-content1 p-4 text-sm"
+                        className="text-sm"
                     >
                         <p className="mb-3 font-medium text-foreground">
                             201 Created — upload successful
@@ -189,7 +185,7 @@ export function UploadClient(): JSX.Element {
                     <div className="h-6" />
                     <div
                         data-testid="error-msg"
-                        className="rounded-2xl border border-border bg-content1 p-4 text-sm"
+                        className="text-sm"
                     >
                         <p className="mb-1 font-medium text-danger">
                             {errorCode !== null ? `${errorCode} Error` : "Network Error"}

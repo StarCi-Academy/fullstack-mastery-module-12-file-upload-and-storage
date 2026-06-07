@@ -6,9 +6,9 @@
         "dev": "vite",
         "build": "tsc -b && vite build",
         "preview": "vite preview",
-        "test:e2e": "playwright test --config ../.playwright/playwright.config.ts",
-        "test:e2e:headed": "playwright test --config ../.playwright/playwright.config.ts --headed",
-        "test:e2e:ui": "playwright test --config ../.playwright/playwright.config.ts --ui"
+        "test:e2e": "npm test --prefix ../.playwright",
+        "test:e2e:headed": "npm run test:headed --prefix ../.playwright",
+        "test:e2e:ui": "npm run test:ui --prefix ../.playwright"
     },
     "dependencies": {
         "@heroui/react": "^3.0.2",
@@ -16,6 +16,7 @@
         "framer-motion": "^11.0.0",
         "react": "^19.0.0",
         "react-dom": "^19.0.0",
+        "react-dropzone": "^15.0.0",
         "swr": "^2.3.3"
     },
     "devDependencies": {

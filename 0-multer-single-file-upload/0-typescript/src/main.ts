@@ -9,6 +9,7 @@ import { MulterExceptionFilter } from "./common"
  */
 async function bootstrap(): Promise<void> {
     const app = await NestFactory.create(AppModule)
+    app.enableCors()
     app.useGlobalFilters(new MulterExceptionFilter())
     const port = Number(process.env.PORT ?? 3000)
     await app.listen(port)

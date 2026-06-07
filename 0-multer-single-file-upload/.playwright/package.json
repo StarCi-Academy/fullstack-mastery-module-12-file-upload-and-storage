@@ -1,14 +1,12 @@
 {
-    "name": "multer-single-file-upload-playwright",
-    "version": "0.0.1",
+    "name": "m12-l0-multer-playwright",
     "private": true,
     "scripts": {
-        "test:e2e": "playwright test",
-        "test:e2e:headed": "playwright test --headed",
-        "test:e2e:ui": "playwright test --ui"
+        "test": "playwright test",
+        "test:headed": "playwright test --headed",
+        "test:ui": "playwright test --ui"
     },
     "devDependencies": {
-        "@playwright/test": "^1.49.0",
-        "typescript": "^5.7.3"
+        "@playwright/test": "^1.45.0"
     }
 }

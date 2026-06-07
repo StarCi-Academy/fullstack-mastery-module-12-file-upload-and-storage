@@ -3,8 +3,9 @@
  */
 import { defineConfig, devices } from "@playwright/test"
 
-const FE_PORT = Number(process.env.FE_PORT ?? 5173)
-const BASE_URL = process.env.PLAYWRIGHT_BASE_URL ?? `http://localhost:${FE_PORT}`
+const FE_PORT = Number(process.env.FE_PORT ?? 3411)
+const BE_PORT = Number(process.env.BE_PORT ?? 3410)
+const BASE_URL = process.env.PLAYWRIGHT_BASE_URL ?? `http://127.0.0.1:${FE_PORT}`
 
 export default defineConfig({
     testDir: "./scripts",
@@ -31,13 +32,14 @@ export default defineConfig({
             // Start the NestJS backend before running specs.
             command: "npm run start:dev",
             cwd: "../0-typescript",
-            port: 3000,
+            port: BE_PORT,
+            env: { PORT: String(BE_PORT) },
             reuseExistingServer: !process.env.CI,
             timeout: 120_000,
         },
         {
             // Start the Vite dev server for the HeroUI frontend.
-            command: `npx vite --port ${FE_PORT}`,
+            command: "npm run dev",
             cwd: "../frontend",
             port: FE_PORT,
             reuseExistingServer: !process.env.CI,
