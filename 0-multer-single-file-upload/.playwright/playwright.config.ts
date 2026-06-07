@@ -44,6 +44,9 @@ export default defineConfig({
             port: FE_PORT,
             reuseExistingServer: !process.env.CI,
             timeout: 120_000,
+            env: {
+                VITE_API_BASE: `http://127.0.0.1:${BE_PORT}`,
+            },
         },
     ],
 })

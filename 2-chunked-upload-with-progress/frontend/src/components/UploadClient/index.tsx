@@ -145,19 +145,47 @@ export function UploadClient(): JSX.Element {
         }
     }
 
-    const isIdle = status === "idle"
-    const isDone = status === "done"
     const isError = status === "error"
 
+    /** Map flow status to HeroUI Chip color + background (matches L0/L1 layout). */
+    const chipColor = (
+        s: string,
+    ): {
+        textColor: "default" | "success" | "danger" | "warning"
+        bgClass: string
+    } => {
+        if (s === "done") return { textColor: "success", bgClass: "bg-success/20" }
+        if (s === "error") return { textColor: "danger", bgClass: "bg-danger/20" }
+        if (s === "uploading" || s === "finalizing") {
+            return { textColor: "warning", bgClass: "bg-warning/20" }
+        }
+        return { textColor: "default", bgClass: "bg-muted/20" }
+    }
+
     return (
-        <div>
+        <div className="flex flex-col">
+            {/* Status chip — top of form, same as L0/L1 */}
+            <div className="flex items-center gap-2">
+                <span className="text-sm font-medium text-foreground">Upload Status</span>
+                <Chip
+                    data-testid="upload-status"
+                    color={chipColor(status).textColor}
+                    size="sm"
+                    className={`w-fit capitalize ${chipColor(status).bgClass}`}
+                >
+                    {status}
+                </Chip>
+            </div>
+
+            <div className="h-6" />
+
             <FileDropzone file={file} onFileSelect={onFileSelect} isDisabled={busy} />
             {file && (
                 <p className="mt-1.5 text-xs text-muted">
                     {file.name} — {(file.size / 1024).toFixed(1)} KB
                 </p>
             )}
-            <div className="h-3" />
+            <div className="h-6" />
 
             {/* Session ID — auto-filled after init, can be pasted to resume */}
             <label className="text-sm font-medium text-foreground">
@@ -200,18 +228,6 @@ export function UploadClient(): JSX.Element {
             </div>
             <div className="h-6" />
 
-            {/* Status chip */}
-            <Chip
-                variant="secondary"
-                color={isDone ? "success" : isError ? "danger" : "default"}
-                size="sm"
-                className="w-fit capitalize"
-                data-testid="upload-status"
-            >
-                {status}
-            </Chip>
-            <div className="h-3" />
-
             {/* Overall progress bar */}
             <label className="text-sm font-medium text-foreground">
                 Overall progress
@@ -228,7 +244,7 @@ export function UploadClient(): JSX.Element {
                     {progress}%
                 </span>
             </div>
-            <div className="h-3" />
+            <div className="h-6" />
 
             {/* Per-chunk progress (only shown when chunks are known) */}
             {chunkPcts.length > 1 && (

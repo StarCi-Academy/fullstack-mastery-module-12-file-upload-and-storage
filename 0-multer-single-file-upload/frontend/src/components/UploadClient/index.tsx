@@ -54,11 +54,14 @@ export function UploadClient(): JSX.Element {
     // Map UploadStatus to HeroUI Chip color.
     const chipColor = (
         s: UploadStatus
-    ): "default" | "success" | "danger" | "warning" => {
-        if (s === "success") return "success"
-        if (s === "error") return "danger"
-        if (s === "uploading") return "warning"
-        return "default"
+    ): {
+        textColor: "default" | "success" | "danger" | "warning" 
+        bgClass: string
+    } => {
+        if (s === "success") return { textColor: "success", bgClass: "bg-success/20" }
+        if (s === "error") return { textColor: "danger", bgClass: "bg-danger/20" }
+        if (s === "uploading") return { textColor: "warning", bgClass: "bg-warning/20" }
+        return { textColor: "default", bgClass: "bg-muted/20" }
     }
 
     const onFileSelect = useCallback((file: File | null): void => {
@@ -114,18 +117,18 @@ export function UploadClient(): JSX.Element {
     return (
         <div className="flex flex-col">
             {/* Status chip */}
+            <div className="flex items-center gap-2">
+            <span className="text-sm font-medium text-foreground">Upload Status</span>
             <Chip
                 data-testid="upload-status"
-                variant="secondary"
-                color={chipColor(uploadStatus)}
+                color={chipColor(uploadStatus).textColor}
                 size="sm"
-                className="w-fit capitalize"
+                className={`w-fit capitalize ${chipColor(uploadStatus).bgClass}`}
             >
-                {uploadStatus}
-            </Chip>
-
+                    {uploadStatus}
+                </Chip>
+            </div>
             <div className="h-6" />
-
             <FileDropzone
                 key={dropzoneKey}
                 file={selectedFile}
@@ -137,7 +140,7 @@ export function UploadClient(): JSX.Element {
                 </p>
             )}
 
-            <div className="h-6" />
+            <div className="h-3" />
 
             {/* Action buttons */}
             <div className="flex gap-3">

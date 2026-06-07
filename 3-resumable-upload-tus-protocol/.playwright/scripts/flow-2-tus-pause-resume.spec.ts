@@ -4,8 +4,8 @@
  * Resume. The library HEADs /files/:id, reads Upload-Offset, and continues
  * PATCH from that byte. The upload must complete and show a result URL.
  *
- * A 6 MB file with 2 MB chunk size gives ~3 PATCH requests, making it
- * realistic to pause mid-upload without timing issues.
+ * A 20 MB file with 2 MB chunk size gives ~10 PATCH requests, making it
+ * realistic to pause mid-upload on fast localhost without racing to done.
  */
 import { expect, test } from "@playwright/test"
 import * as path from "path"
@@ -14,10 +14,10 @@ import * as os from "os"
 import { observe } from "./observe"
 
 test("flow 2 — pause mid-upload then resume and complete", async ({ page }) => {
-    // Create a 6 MB temp file so we get multiple PATCH requests.
+    // Create a 20 MB temp file so we get multiple PATCH requests.
     const tmpDir = os.tmpdir()
     const filePath = path.join(tmpDir, "tus-flow2-test.bin")
-    const buf = Buffer.alloc(6 * 1024 * 1024, 0xcd)
+    const buf = Buffer.alloc(20 * 1024 * 1024, 0xcd)
     fs.writeFileSync(filePath, buf)
 
     await page.goto("/")
@@ -26,12 +26,10 @@ test("flow 2 — pause mid-upload then resume and complete", async ({ page }) =>
     // Attach file.
     await page.getByTestId("file-input").setInputFiles(filePath)
 
-    // Start upload.
+    // Start upload and wait until Pause is enabled (status === "running").
     await page.getByTestId("start-btn").click()
     await observe(page, "upload started")
-
-    // Wait briefly then pause — status should transition to "paused".
-    await page.waitForTimeout(400)
+    await expect(page.getByTestId("pause-btn")).toBeEnabled({ timeout: 30_000 })
     await page.getByTestId("pause-btn").click()
 
     await expect(page.getByTestId("upload-status")).toContainText("paused", {

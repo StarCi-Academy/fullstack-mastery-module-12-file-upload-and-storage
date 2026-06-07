@@ -116,26 +116,35 @@ export function UploadClient(): JSX.Element {
         })
     }
 
-    /** Map status to HeroUI Chip color. */
-    function chipColor(): "success" | "danger" | "default" | "warning" {
-        if (status === "done") return "success"
-        if (status === "error") return "danger"
-        if (status === "running") return "warning"
-        return "default"
+    /** Map tus upload status to HeroUI Chip color + background (matches L0–L2 layout). */
+    const chipColor = (
+        s: UploadStatus,
+    ): {
+        textColor: "default" | "success" | "danger" | "warning"
+        bgClass: string
+    } => {
+        if (s === "done") return { textColor: "success", bgClass: "bg-success/20" }
+        if (s === "error") return { textColor: "danger", bgClass: "bg-danger/20" }
+        if (s === "running" || s === "paused") {
+            return { textColor: "warning", bgClass: "bg-warning/20" }
+        }
+        return { textColor: "default", bgClass: "bg-muted/20" }
     }
 
     return (
         <div className="flex flex-col">
-            {/* Status chip */}
-            <Chip
-                data-testid="upload-status"
-                variant="secondary"
-                color={chipColor()}
-                size="sm"
-                className="w-fit capitalize"
-            >
-                {status}
-            </Chip>
+            {/* Status chip — top of form, same as L0/L1/L2 */}
+            <div className="flex items-center gap-2">
+                <span className="text-sm font-medium text-foreground">Upload Status</span>
+                <Chip
+                    data-testid="upload-status"
+                    color={chipColor(status).textColor}
+                    size="sm"
+                    className={`w-fit capitalize ${chipColor(status).bgClass}`}
+                >
+                    {status}
+                </Chip>
+            </div>
 
             <div className="h-6" />
 
