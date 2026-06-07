@@ -1,6 +1,0 @@
-academy\starci\exception\GlobalExceptionHandler.class
-academy\starci\dto\UploadedFileInfo.class
-academy\starci\service\UploadService.class
-academy\starci\config\UploadProperties.class
-academy\starci\controller\UploadController.class
-academy\starci\UploadApplication.class

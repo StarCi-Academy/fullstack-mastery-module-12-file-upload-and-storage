@@ -6,7 +6,8 @@ var builder = WebApplication.CreateBuilder(args);
 // Port — reads PORT env var to match TypeScript main.ts behaviour
 // ---------------------------------------------------------------------------
 var port = Environment.GetEnvironmentVariable("PORT") ?? "3000";
-builder.WebHost.UseUrls($"http://*:{port}");
+// Bind to 127.0.0.1 only — avoids Windows Firewall popup triggered by 0.0.0.0/* bind.
+builder.WebHost.UseUrls($"http://127.0.0.1:{port}");
 
 // ---------------------------------------------------------------------------
 // Services

@@ -33,7 +33,8 @@ async function bootstrap(): Promise<void> {
     })
     const configService = app.get(ConfigService)
     const port = configService.get<number>("PORT") ?? 3370
-    await app.listen(port)
+    // Bind to loopback only — avoids Windows Firewall "Allow access" popup on 0.0.0.0.
+    await app.listen(port, "127.0.0.1")
     // eslint-disable-next-line no-console
     console.log(`[bootstrap] tus backend listening on http://localhost:${port}`)
 }

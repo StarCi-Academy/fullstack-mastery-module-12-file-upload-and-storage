@@ -287,8 +287,12 @@ func main() {
 		port = "3000"
 	}
 
-	log.Printf("Go S3 presign server listening on http://localhost:%s", port)
-	if err := http.ListenAndServe(":"+port, mux); err != nil {
+	// Bind loopback explicitly (overridable via HOST) so local E2E does not trip the
+	// host firewall prompt that fires when a fresh binary listens on all interfaces.
+	host := getEnvOrDefault("HOST", "127.0.0.1")
+	addr := host + ":" + port
+	log.Printf("Go S3 presign server listening on http://%s", addr)
+	if err := http.ListenAndServe(addr, mux); err != nil {
 		log.Fatalf("ListenAndServe error: %v", err)
 	}
 }

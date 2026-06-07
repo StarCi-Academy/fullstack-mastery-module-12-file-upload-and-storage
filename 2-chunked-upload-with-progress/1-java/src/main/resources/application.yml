@@ -1,5 +1,7 @@
 server:
   port: 3000
+  # Bind to loopback only — avoids Windows Firewall popup triggered by 0.0.0.0 bind.
+  address: 127.0.0.1
 
 spring:
   mvc:

@@ -32,7 +32,8 @@ async function bootstrap(): Promise<void> {
     app.use(express.json({ limit: "1mb" }))
     const configService = app.get(ConfigService)
     const port = configService.get<number>("PORT") ?? 3000
-    await app.listen(port)
+    // Bind to 127.0.0.1 only — avoids Windows Firewall popup triggered by 0.0.0.0 bind.
+    await app.listen(port, "127.0.0.1")
     // eslint-disable-next-line no-console
     console.log(`[bootstrap] backend listening on http://localhost:${port}`)
 }

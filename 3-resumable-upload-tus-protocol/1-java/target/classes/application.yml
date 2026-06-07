@@ -1,7 +1,0 @@
-server:
-  port: ${PORT:3370}
-
-tus:
-  path: ${TUS_PATH:/files}
-  directory: ${TUS_DIRECTORY:./uploads}
-  max-size: ${TUS_MAX_SIZE:104857600}

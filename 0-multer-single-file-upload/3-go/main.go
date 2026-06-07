@@ -199,8 +199,12 @@ func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/upload", makeUploadHandler(cfg))
 
-	log.Printf("Go server started on http://localhost:%s", port)
-	if err := http.ListenAndServe(":"+port, mux); err != nil {
+	// Bind to the loopback interface only — the demo never needs to be reachable
+	// from other hosts, and binding 127.0.0.1 avoids the host firewall prompt that
+	// 0.0.0.0 triggers on some platforms.
+	addr := "127.0.0.1:" + port
+	log.Printf("Go server started on http://%s", addr)
+	if err := http.ListenAndServe(addr, mux); err != nil {
 		log.Fatalf("ListenAndServe error: %v", err)
 	}
 }

@@ -528,8 +528,11 @@ func main() {
 	mux.Handle(tusPath+"/", server)
 	mux.Handle(tusPath, server) // collection endpoint without trailing slash
 
-	addr := ":" + port
-	log.Printf("[main] tus backend listening on http://localhost%s (path=%s, dir=%s, maxSize=%d)",
+	// Bind to the loopback interface so the dev server is reachable only from
+	// localhost (matches the documented http://localhost:3370 startup URL and
+	// avoids exposing the upload endpoint on every network interface).
+	addr := "127.0.0.1:" + port
+	log.Printf("[main] tus backend listening on http://%s (path=%s, dir=%s, maxSize=%d)",
 		addr, tusPath, tusDirectory, tusMaxSize)
 
 	if err := http.ListenAndServe(addr, mux); err != nil {

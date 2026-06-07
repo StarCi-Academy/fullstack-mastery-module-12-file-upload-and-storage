@@ -34,8 +34,8 @@ Directory.CreateDirectory(tusDirectory);
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Bind to the configured port on all interfaces (matches TS app.listen(port))
-builder.WebHost.UseUrls($"http://*:{port}");
+// Bind to loopback only — prevents Windows Firewall "Allow access" popup on 0.0.0.0.
+builder.WebHost.UseUrls($"http://127.0.0.1:{port}");
 
 // CORS — expose all tus response headers so browser clients work directly
 // (mirrors NestJS enableCors with preflightContinue: true + exposedHeaders)

@@ -246,7 +246,7 @@ func handlePatchChunk(cfg config, store *sessionStore) http.HandlerFunc {
 			return
 		}
 
-		id := extractPathSegment(r.URL.Path, 2) // /uploads/<id>/chunks
+		id := extractPathSegment(r.URL.Path, 1) // /uploads/<id>/chunks
 		sess, ok := store.get(id)
 		if !ok {
 			writeError(w, http.StatusNotFound, fmt.Sprintf("Upload session %s not found", id))
@@ -300,7 +300,7 @@ func handleFinalize(cfg config, store *sessionStore) http.HandlerFunc {
 			return
 		}
 
-		id := extractPathSegment(r.URL.Path, 2) // /uploads/<id>/finalize
+		id := extractPathSegment(r.URL.Path, 1) // /uploads/<id>/finalize
 		sess, ok := store.get(id)
 		if !ok {
 			writeError(w, http.StatusNotFound, fmt.Sprintf("Upload session %s not found", id))
@@ -386,7 +386,7 @@ func handleStatus(store *sessionStore) http.HandlerFunc {
 			return
 		}
 
-		id := extractPathSegment(r.URL.Path, 2) // /uploads/<id>/status
+		id := extractPathSegment(r.URL.Path, 1) // /uploads/<id>/status
 		sess, ok := store.get(id)
 		if !ok {
 			writeError(w, http.StatusNotFound, fmt.Sprintf("Upload session %s not found", id))
@@ -505,8 +505,9 @@ func main() {
 	store := newSessionStore()
 	router := newRouter(cfg, store)
 
-	addr := ":" + cfg.port
-	log.Printf("[bootstrap] backend listening on http://localhost%s", addr)
+	// Bind to 127.0.0.1 only — avoids Windows Firewall popup triggered by 0.0.0.0 bind.
+	addr := "127.0.0.1:" + cfg.port
+	log.Printf("[bootstrap] backend listening on http://localhost:%s", cfg.port)
 	if err := http.ListenAndServe(addr, router); err != nil {
 		log.Fatalf("ListenAndServe error: %v", err)
 	}

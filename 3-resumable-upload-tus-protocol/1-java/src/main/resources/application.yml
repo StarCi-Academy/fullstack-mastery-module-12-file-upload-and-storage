@@ -1,5 +1,7 @@
 server:
   port: ${PORT:3370}
+  # Bind to loopback only — prevents Windows Firewall popup when binding 0.0.0.0.
+  address: ${SERVER_ADDRESS:127.0.0.1}
 
 tus:
   path: ${TUS_PATH:/files}

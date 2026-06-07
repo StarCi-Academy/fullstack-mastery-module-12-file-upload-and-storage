@@ -1,6 +1,0 @@
-academy\starci\config\TusProperties.class
-academy\starci\controller\TusController.class
-academy\starci\service\FileStorageService.class
-academy\starci\TusApplication.class
-academy\starci\service\UploadInfo.class
-academy\starci\config\WebConfig.class
