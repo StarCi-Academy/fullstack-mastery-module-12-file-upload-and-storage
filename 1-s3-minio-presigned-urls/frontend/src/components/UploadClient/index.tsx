@@ -1,7 +1,8 @@
-import { useRef, useState } from "react"
+import { useCallback, useState } from "react"
 import useSWRMutation from "swr/mutation"
 import { Button, Chip, Spinner } from "@heroui/react"
 import { UploadIcon, DownloadIcon } from "../ui"
+import { FileDropzone } from "./FileDropzone"
 import {
     requestPresignPut,
     requestPresignGet,
@@ -19,7 +20,7 @@ import {
  *   3. GET /presign/get/:key → receive signed GET URL → render download link
  *
  * data-testid contract (must match .playwright/scripts/*.spec.ts exactly):
- *   file-input      — <input type="file"> for selecting a file
+ *   file-input      — hidden input inside FileDropzone
  *   upload-btn      — button that starts the upload flow
  *   upload-status   — status chip: "idle" | "uploading" | "success" | "error"
  *   presign-key     — span showing the object key after successful upload
@@ -27,7 +28,7 @@ import {
  *   error-msg       — span showing the error message on failure
  */
 export function UploadClient(): JSX.Element {
-    const fileInputRef = useRef<HTMLInputElement>(null)
+    const [selectedFile, setSelectedFile] = useState<File | null>(null)
 
     // Status of the full upload flow.
     const [status, setStatus] = useState<"idle" | "uploading" | "success" | "error">("idle")
@@ -39,6 +40,17 @@ export function UploadClient(): JSX.Element {
     const [etag, setEtag] = useState<string>("")
     const [getInfo, setGetInfo] = useState<PresignGetResponse | null>(null)
 
+    const onFileSelect = useCallback((file: File | null): void => {
+        setSelectedFile(file)
+        setStatus("idle")
+        setErrorMsg("")
+        setPresignKey("")
+        setDownloadUrl("")
+        setPutInfo(null)
+        setEtag("")
+        setGetInfo(null)
+    }, [])
+
     /**
      * useSWRMutation for the upload flow — keeps `isMutating` in sync so
      * the button can show a spinner while the flow is in progress.
@@ -46,8 +58,7 @@ export function UploadClient(): JSX.Element {
     const { trigger, isMutating } = useSWRMutation(
         "upload-flow",
         async () => {
-            const file = fileInputRef.current?.files?.[0]
-            if (!file) throw new Error("No file selected.")
+            if (!selectedFile) throw new Error("No file selected.")
 
             setStatus("uploading")
             setErrorMsg("")
@@ -59,14 +70,14 @@ export function UploadClient(): JSX.Element {
 
             // Step 1: request presigned PUT URL from backend.
             const put = await requestPresignPut(
-                file.name,
-                file.type || "application/octet-stream",
+                selectedFile.name,
+                selectedFile.type || "application/octet-stream",
             )
             setPutInfo(put)
             setPresignKey(put.key)
 
             // Step 2: PUT file directly to MinIO — NestJS not involved.
-            const tag = await putFileToMinIO(put.url, file)
+            const tag = await putFileToMinIO(put.url, selectedFile)
             setEtag(tag)
 
             // Step 3: request presigned GET URL for the uploaded object.
@@ -90,21 +101,23 @@ export function UploadClient(): JSX.Element {
             ? "success"
             : status === "error"
               ? "danger"
-              : "default"
+              : status === "uploading"
+                ? "warning"
+                : "default"
+
+    const canUpload = selectedFile !== null && !isMutating
 
     return (
-        <div className="rounded-2xl border border-border bg-content1 p-6">
-            {/* File picker */}
-            <label className="text-sm font-medium text-foreground">
-                Select a file
-            </label>
-            <div className="h-1.5" />
-            <input
-                data-testid="file-input"
-                ref={fileInputRef}
-                type="file"
-                className="block w-full text-sm text-foreground file:mr-3 file:rounded-lg file:border-0 file:bg-default-100 file:px-3 file:py-1.5 file:text-sm file:font-medium"
+        <div className="flex flex-col">
+            <FileDropzone
+                file={selectedFile}
+                onFileSelect={onFileSelect}
             />
+            {selectedFile && (
+                <p className="mt-1.5 text-xs text-muted">
+                    {selectedFile.name} — {selectedFile.type || "unknown MIME"}
+                </p>
+            )}
 
             <div className="h-6" />
 
@@ -112,7 +125,7 @@ export function UploadClient(): JSX.Element {
             <Button
                 data-testid="upload-btn"
                 variant="primary"
-                isDisabled={isMutating}
+                isDisabled={!canUpload}
                 onPress={() => void trigger()}
             >
                 <span className="flex items-center gap-2">
@@ -128,30 +141,23 @@ export function UploadClient(): JSX.Element {
             <div className="h-6" />
 
             {/* Status chip */}
-            <div className="flex items-center gap-2">
-                <span className="text-sm text-muted">Status:</span>
-                <Chip
-                    data-testid="upload-status"
-                    variant="soft"
-                    color={statusColor}
-                    className="capitalize"
-                >
-                    {status}
-                </Chip>
-            </div>
+            <Chip
+                data-testid="upload-status"
+                variant="secondary"
+                color={statusColor}
+                size="sm"
+                className="w-fit capitalize"
+            >
+                {status}
+            </Chip>
 
             {/* Error message */}
             {status === "error" && errorMsg && (
                 <>
                     <div className="h-3" />
-                    <div className="rounded-xl bg-default-100 p-3">
-                        <span
-                            data-testid="error-msg"
-                            className="text-sm text-danger"
-                        >
-                            {errorMsg}
-                        </span>
-                    </div>
+                    <span data-testid="error-msg" className="text-sm text-danger">
+                        {errorMsg}
+                    </span>
                 </>
             )}
 
@@ -162,51 +168,51 @@ export function UploadClient(): JSX.Element {
 
                     {/* Step 1 result — presigned PUT info */}
                     {putInfo && (
-                        <div className="rounded-xl border border-border bg-default-100 p-4">
+                        <div className="text-sm">
                             <div className="text-xs font-semibold uppercase tracking-wide text-muted">
                                 Step 1 — Presigned PUT URL received
                             </div>
                             <div className="h-2" />
-                            <div className="text-sm text-foreground">
+                            <div className="text-foreground">
                                 <span className="text-muted">Key: </span>
                                 <span data-testid="presign-key" className="font-mono break-all">
                                     {presignKey}
                                 </span>
                             </div>
                             <div className="h-1.5" />
-                            <div className="text-sm text-foreground">
+                            <div className="text-foreground">
                                 <span className="text-muted">Expires: </span>
                                 {putInfo.expiresInSeconds}s
                             </div>
                         </div>
                     )}
 
-                    <div className="h-3" />
+                    <div className="h-4" />
 
                     {/* Step 2 result — MinIO PUT */}
                     {etag && (
-                        <div className="rounded-xl border border-border bg-default-100 p-4">
+                        <div className="text-sm">
                             <div className="text-xs font-semibold uppercase tracking-wide text-muted">
                                 Step 2 — MinIO PUT complete (NestJS not involved)
                             </div>
                             <div className="h-2" />
-                            <div className="text-sm text-foreground">
+                            <div className="text-foreground">
                                 <span className="text-muted">ETag: </span>
                                 <span className="font-mono">{etag}</span>
                             </div>
                         </div>
                     )}
 
-                    <div className="h-3" />
+                    <div className="h-4" />
 
                     {/* Step 3 result — presigned GET URL */}
                     {getInfo && downloadUrl && (
-                        <div className="rounded-xl border border-border bg-default-100 p-4">
+                        <div className="text-sm">
                             <div className="text-xs font-semibold uppercase tracking-wide text-muted">
                                 Step 3 — Presigned GET URL (download)
                             </div>
                             <div className="h-2" />
-                            <div className="text-sm text-foreground">
+                            <div className="text-foreground">
                                 <span className="text-muted">Expires: </span>
                                 {getInfo.expiresInSeconds}s
                             </div>
@@ -216,7 +222,7 @@ export function UploadClient(): JSX.Element {
                                 href={downloadUrl}
                                 target="_blank"
                                 rel="noreferrer"
-                                className="inline-flex items-center gap-1.5 text-sm text-accent underline underline-offset-2"
+                                className="inline-flex items-center gap-1.5 text-accent underline underline-offset-2"
                             >
                                 <DownloadIcon className="h-3.5 w-3.5" />
                                 Download object from MinIO

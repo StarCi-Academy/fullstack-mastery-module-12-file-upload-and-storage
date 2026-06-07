@@ -32,9 +32,47 @@ Open **http://127.0.0.1:3411/**
 
 **Demo script:** pick a JPEG/PNG/WebP under 5 MB → Upload → see 201 metadata. Try oversize or wrong MIME → 413/415.
 
-### L1 — MinIO
+### L1 — MinIO presigned URLs
 
-Start MinIO (project docker/compose if present), then BE `3420` + FE `3421`.
+MinIO on `:9000` (lesson compose: `1-s3-minio-presigned-urls/.docker` → `minioadmin/minioadmin`).
+
+If your local MinIO uses a different password (e.g. Docker `minio` container with `minioadmin123`):
+
+```powershell
+$env:PORT='3420'
+$env:S3_SECRET_KEY='minioadmin123'   # match your MinIO root password
+cd 1-s3-minio-presigned-urls/0-typescript
+npm run start:dev
+
+cd 1-s3-minio-presigned-urls/frontend
+npm run dev
+```
+
+Open **http://127.0.0.1:3421/** — dropzone → Upload via presigned URL → download link.
+
+### L2 — chunked upload
+
+```powershell
+cd 2-chunked-upload-with-progress/0-typescript
+$env:PORT='3430'; npm run start:dev
+
+cd 2-chunked-upload-with-progress/frontend
+npm run dev
+```
+
+Open **http://127.0.0.1:3431/**
+
+### L3 — TUS resumable
+
+```powershell
+cd 3-resumable-upload-tus-protocol/0-typescript
+$env:PORT='3440'; npm run start:dev
+
+cd 3-resumable-upload-tus-protocol/frontend
+npm run dev
+```
+
+Open **http://127.0.0.1:3441/** — Start → Pause → Resume.
 
 ### E2E
 

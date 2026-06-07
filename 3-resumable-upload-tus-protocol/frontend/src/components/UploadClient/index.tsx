@@ -1,7 +1,8 @@
-import { useRef, useState } from "react"
+import { useCallback, useRef, useState } from "react"
 import { Button, Chip } from "@heroui/react"
 import * as tus from "tus-js-client"
 import { TUS_ENDPOINT } from "../../lib"
+import { FileDropzone } from "./FileDropzone"
 
 /** Upload lifecycle status. */
 type UploadStatus = "idle" | "running" | "paused" | "done" | "error"
@@ -10,7 +11,7 @@ type UploadStatus = "idle" | "running" | "paused" | "done" | "error"
  * UploadClient — the shared upload UI used by both Local and Sandbox.
  *
  * Exposes data-testids the Playwright specs assert:
- *   file-input      — hidden <input type="file">
+ *   file-input      — hidden input inside FileDropzone
  *   start-btn       — starts or resumes the upload
  *   pause-btn       — pauses an in-flight upload
  *   resume-btn      — resumes a paused upload
@@ -28,7 +29,6 @@ export function UploadClient(): JSX.Element {
     const [percent, setPercent] = useState<number>(0)
     const [uploadUrl, setUploadUrl] = useState<string>("")
     const uploadRef = useRef<tus.Upload | null>(null)
-    const fileInputRef = useRef<HTMLInputElement | null>(null)
 
     /** Create a new tus.Upload for the given File and wire all callbacks. */
     function createUpload(f: File): tus.Upload {
@@ -47,7 +47,7 @@ export function UploadClient(): JSX.Element {
             onAfterResponse(_req: tus.HttpRequest, res: tus.HttpResponse): void {
                 const offset = res.getHeader("Upload-Offset")
                 const location = res.getHeader("Location")
-                const parts: string[] = [`HTTP ${res.getStatus()}`]
+                const parts: Array<string> = [`HTTP ${res.getStatus()}`]
                 if (offset) parts.push(`Upload-Offset=${offset}`)
                 if (location) parts.push(`Location=${location}`)
                 console.log("[tus]", parts.join("  "))
@@ -69,15 +69,13 @@ export function UploadClient(): JSX.Element {
         })
     }
 
-    /** Handle file picker change — resets all state. */
-    function handleFileChange(e: React.ChangeEvent<HTMLInputElement>): void {
-        const picked = e.target.files?.[0] ?? null
+    const onFileSelect = useCallback((picked: File | null): void => {
         setFile(picked)
         setStatus("idle")
         setPercent(0)
         setUploadUrl("")
         uploadRef.current = null
-    }
+    }, [])
 
     /** Start a new upload for the selected file. */
     function handleStart(): void {
@@ -119,9 +117,10 @@ export function UploadClient(): JSX.Element {
     }
 
     /** Map status to HeroUI Chip color. */
-    function chipColor(): "success" | "danger" | "default" {
+    function chipColor(): "success" | "danger" | "default" | "warning" {
         if (status === "done") return "success"
         if (status === "error") return "danger"
+        if (status === "running") return "warning"
         return "default"
     }
 
@@ -130,32 +129,22 @@ export function UploadClient(): JSX.Element {
             {/* Status chip */}
             <Chip
                 data-testid="upload-status"
-                variant="soft"
+                variant="secondary"
                 color={chipColor()}
-                className="capitalize"
+                size="sm"
+                className="w-fit capitalize"
             >
                 {status}
             </Chip>
 
-            <div className="h-3" />
+            <div className="h-6" />
 
-            {/* File picker */}
-            <input
-                ref={fileInputRef}
-                data-testid="file-input"
-                type="file"
-                className="hidden"
-                onChange={handleFileChange}
-            />
-            <label className="text-sm font-medium text-foreground">File</label>
-            <div className="h-1.5" />
-            <button
-                type="button"
-                className="inline-flex w-full cursor-pointer items-center rounded-xl border border-border bg-content1 px-4 py-2 text-sm text-foreground hover:bg-default-100"
-                onClick={() => fileInputRef.current?.click()}
-            >
-                {file ? file.name : "Click to pick a file…"}
-            </button>
+            <FileDropzone file={file} onFileSelect={onFileSelect} />
+            {file && (
+                <p className="mt-1.5 text-xs text-muted">
+                    {file.name} — {file.type || "unknown MIME"}
+                </p>
+            )}
 
             <div className="h-6" />
 
@@ -211,7 +200,7 @@ export function UploadClient(): JSX.Element {
                     <div className="h-1.5" />
                     <div
                         data-testid="result"
-                        className="break-all rounded-2xl border border-border bg-content1 p-3 text-sm text-foreground"
+                        className="break-all text-sm text-foreground"
                     >
                         {uploadUrl}
                     </div>

@@ -1,5 +1,6 @@
-import { useRef, useState } from "react"
-import { Button, Chip, Spinner } from "@heroui/react"
+import { useCallback, useState } from "react"
+import { Button, Chip, Input, Spinner } from "@heroui/react"
+import { FileDropzone } from "./FileDropzone"
 import {
     initSession,
     getStatus,
@@ -37,7 +38,14 @@ export function UploadClient(): JSX.Element {
     // whether a flow is running
     const [busy, setBusy] = useState<boolean>(false)
 
-    const fileInputRef = useRef<HTMLInputElement | null>(null)
+    const onFileSelect = useCallback((picked: File | null): void => {
+        setFile(picked)
+        setError(null)
+        setResult(null)
+        setProgress(0)
+        setChunkPcts([])
+        setStatus("idle")
+    }, [])
 
     /** Update a single chunk's progress percentage in the array. */
     function setChunkPct(index: number, pct: number): void {
@@ -143,56 +151,12 @@ export function UploadClient(): JSX.Element {
 
     return (
         <div>
-            {/* File picker row */}
-            <label className="text-sm font-medium text-foreground">File</label>
-            <div className="h-1.5" />
-            <div className="flex items-center gap-3">
-                {/* Hidden native <input type="file"> — setInputFiles drives it in Playwright */}
-                <input
-                    ref={fileInputRef}
-                    type="file"
-                    data-testid="file-input"
-                    className="hidden"
-                    onChange={(e) => {
-                        setFile(e.target.files?.[0] ?? null)
-                        setError(null)
-                        setResult(null)
-                        setProgress(0)
-                        setChunkPcts([])
-                        setStatus("idle")
-                    }}
-                />
-                {/* Visible button that opens the file picker */}
-                <Button
-                    variant="secondary"
-                    isDisabled={busy}
-                    onPress={() => fileInputRef.current?.click()}
-                >
-                    <span className="flex items-center gap-2">
-                        {/* Inline file SVG icon */}
-                        <svg
-                            width="14"
-                            height="14"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            aria-hidden="true"
-                        >
-                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                            <polyline points="14 2 14 8 20 8" />
-                        </svg>
-                        {file ? file.name : "Pick file"}
-                    </span>
-                </Button>
-                {file && (
-                    <span className="text-sm text-muted">
-                        {(file.size / 1024).toFixed(1)} KB
-                    </span>
-                )}
-            </div>
+            <FileDropzone file={file} onFileSelect={onFileSelect} isDisabled={busy} />
+            {file && (
+                <p className="mt-1.5 text-xs text-muted">
+                    {file.name} — {(file.size / 1024).toFixed(1)} KB
+                </p>
+            )}
             <div className="h-3" />
 
             {/* Session ID — auto-filled after init, can be pasted to resume */}
@@ -200,12 +164,12 @@ export function UploadClient(): JSX.Element {
                 Session ID (auto-filled — paste to resume)
             </label>
             <div className="h-1.5" />
-            <input
-                type="text"
+            <Input
+                variant="secondary"
                 value={sessionId}
                 onChange={(e) => setSessionId(e.target.value)}
                 placeholder="auto-filled after Upload"
-                className="w-full rounded-2xl border border-border bg-content1 px-3 py-2 text-sm text-foreground placeholder:text-muted focus:outline-none"
+                aria-label="Session ID"
             />
             <div className="h-6" />
 
@@ -237,17 +201,15 @@ export function UploadClient(): JSX.Element {
             <div className="h-6" />
 
             {/* Status chip */}
-            <div className="flex items-center gap-3">
-                <span className="text-sm text-muted">Status:</span>
-                <Chip
-                    variant="soft"
-                    color={isDone ? "success" : isError ? "danger" : "default"}
-                    className="capitalize"
-                    data-testid="upload-status"
-                >
-                    {status}
-                </Chip>
-            </div>
+            <Chip
+                variant="secondary"
+                color={isDone ? "success" : isError ? "danger" : "default"}
+                size="sm"
+                className="w-fit capitalize"
+                data-testid="upload-status"
+            >
+                {status}
+            </Chip>
             <div className="h-3" />
 
             {/* Overall progress bar */}
@@ -298,11 +260,8 @@ export function UploadClient(): JSX.Element {
 
             {/* Result metadata (shown after successful finalize) */}
             {result && (
-                <div
-                    data-testid="result-meta"
-                    className="rounded-2xl border border-border bg-content1 p-3 text-sm text-foreground"
-                >
-                    <div className="font-semibold text-foreground mb-1.5">Upload complete</div>
+                <div data-testid="result-meta" className="text-sm text-foreground">
+                    <div className="font-semibold mb-1.5">Upload complete</div>
                     <div className="text-muted text-xs space-y-0.5">
                         <div>filename: {result.filename}</div>
                         <div>size: {result.size} B</div>
@@ -314,10 +273,7 @@ export function UploadClient(): JSX.Element {
 
             {/* Error message */}
             {isError && error && (
-                <div
-                    data-testid="error-msg"
-                    className="rounded-2xl border border-border bg-content1 p-3 text-sm text-danger"
-                >
+                <div data-testid="error-msg" className="text-sm text-danger">
                     {error}
                 </div>
             )}
