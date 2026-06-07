@@ -41,7 +41,7 @@ export default defineConfig({
         {
             // NestJS backend — starts MinIO via docker compose before this
             command: "npm run start:dev",
-            cwd: "../0-typescript",
+            cwd: "../backend/0-typescript",
             port: 3000,
             reuseExistingServer: !process.env.CI,
             timeout: 120_000,

@@ -31,9 +31,9 @@ export default defineConfig({
     ],
     webServer: [
         {
-            // NestJS backend — uses `npm run start:dev` from the 0-typescript directory
+            // NestJS backend — uses `npm run start:dev` from the backend/0-typescript directory
             command: "npm run start:dev",
-            cwd: "../0-typescript",
+            cwd: "../backend/0-typescript",
             port: 3000,
             reuseExistingServer: !process.env.CI,
             timeout: 120_000,

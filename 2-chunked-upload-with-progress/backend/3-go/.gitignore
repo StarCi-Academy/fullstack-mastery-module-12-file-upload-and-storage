@@ -1,0 +1,5 @@
+*.exe
+*.log
+tmp/
+uploads/
+uploads-go/

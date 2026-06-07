@@ -31,7 +31,7 @@ export default defineConfig({
         {
             // Start the NestJS backend before running specs.
             command: "npm run start:dev",
-            cwd: "../0-typescript",
+            cwd: "../backend/0-typescript",
             port: BE_PORT,
             env: { PORT: String(BE_PORT) },
             reuseExistingServer: !process.env.CI,

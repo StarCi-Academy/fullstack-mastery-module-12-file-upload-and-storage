@@ -31,7 +31,7 @@ export default defineConfig({
     webServer: [
         {
             command: `npm run start:dev`,
-            cwd: "../0-typescript",
+            cwd: "../backend/0-typescript",
             port: 3370,
             reuseExistingServer: !process.env.CI,
             timeout: 120_000,
