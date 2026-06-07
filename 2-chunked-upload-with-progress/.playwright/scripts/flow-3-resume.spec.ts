@@ -15,7 +15,7 @@ import { observe } from "./observe"
 
 // 6MB → 2 chunks at default 5MB chunkSize (5MB + 1MB)
 const FILE_SIZE = 6 * 1024 * 1024
-const BACKEND = process.env.VITE_API_BASE ?? "http://localhost:3000"
+const BACKEND = process.env.VITE_API_BASE ?? "http://127.0.0.1:3000"
 
 test("flow 3 — resume completes an interrupted upload from missing chunks", async ({ page }) => {
     // Step 1: init session via API and PATCH only chunk 0 (simulates partial upload).

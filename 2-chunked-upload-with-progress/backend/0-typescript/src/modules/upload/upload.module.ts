@@ -9,8 +9,7 @@ import {
 } from "./upload.service"
 
 /**
- * Upload module — wire controller + service cho chunked upload.
- * (EN: Upload module — wires controller + service for chunked uploads.)
+ * Upload module — wires controller + service for chunked uploads.
  */
 @Module({
     controllers: [UploadController],

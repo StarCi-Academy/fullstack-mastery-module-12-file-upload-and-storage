@@ -3,10 +3,9 @@ import type { Response } from "express"
 import { MulterError } from "multer"
 
 /**
- * Map MulterError → HTTP response code:
- * - LIMIT_FILE_SIZE  → 413 Payload Too Large.
- * - others           → 400 Bad Request.
- * (EN: Map MulterError → HTTP status; LIMIT_FILE_SIZE → 413, others → 400.)
+ * Map MulterError → HTTP status:
+ * - LIMIT_FILE_SIZE → 413 Payload Too Large.
+ * - others          → 400 Bad Request.
  */
 @Catch(MulterError)
 export class MulterExceptionFilter implements ExceptionFilter {

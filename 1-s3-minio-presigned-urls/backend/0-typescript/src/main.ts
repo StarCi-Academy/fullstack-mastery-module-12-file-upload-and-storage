@@ -13,8 +13,7 @@ import {
 } from "./app.module"
 
 /**
- * Khởi động NestJS app — port đọc từ ConfigService, CORS enabled cho FE call.
- * (EN: Bootstrap the NestJS app — port read from ConfigService, CORS enabled for FE callers.)
+ * Bootstrap the NestJS app — port read from ConfigService, CORS enabled for FE callers.
  */
 async function bootstrap(): Promise<void> {
     const app = await NestFactory.create(AppModule)
@@ -28,9 +27,10 @@ async function bootstrap(): Promise<void> {
     app.enableCors()
     const configService = app.get(ConfigService)
     const port = configService.get<number>("PORT") ?? 3000
-    await app.listen(port)
+    // Bind to 127.0.0.1 (loopback only) — prevents Windows Firewall "Allow access" popup.
+    await app.listen(port, "127.0.0.1")
     // eslint-disable-next-line no-console
-    console.log(`[bootstrap] backend listening on http://localhost:${port}`)
+    console.log(`[bootstrap] backend listening on http://127.0.0.1:${port}`)
 }
 
 void bootstrap()

@@ -18,3 +18,13 @@ go-err.txt
 test-results/
 playwright-report/
 coverage/
+
+# Runtime upload artifacts (written by the demo servers at runtime — never commit)
+uploads/
+uploads-ts/
+uploads-java/
+uploads-csharp/
+uploads-go/
+uploads-test/
+tmp/
+.last-run.json

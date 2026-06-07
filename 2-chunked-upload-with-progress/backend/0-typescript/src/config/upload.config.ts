@@ -3,8 +3,7 @@ import {
 } from "@nestjs/config"
 
 /**
- * Token đăng ký namespace `upload` trong ConfigService — single source of truth cho chunked upload.
- * (EN: Registers the `upload` namespace in ConfigService — single source of truth for chunked upload.)
+ * Registers the `upload` namespace in ConfigService — single source of truth for chunked upload.
  */
 export const UPLOAD_CONFIG_TOKEN = "upload"
 

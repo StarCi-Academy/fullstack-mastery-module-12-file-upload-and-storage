@@ -31,8 +31,7 @@ import type {
 } from "./upload.types"
 
 /**
- * UploadService — quản lý chunked upload session in-memory + ghi/đọc chunk file xuống disk.
- * (EN: UploadService — manages chunked upload sessions in-memory plus writes/reads chunk files to disk.)
+ * UploadService — manages chunked upload sessions in-memory plus writes/reads chunk files to disk.
  */
 @Injectable()
 export class UploadService {
@@ -45,8 +44,7 @@ export class UploadService {
     }
 
     /**
-     * Tạo session mới — totalChunks = ceil(size / chunkSize), persist tmp folder ngay.
-     * (EN: Create a new session — totalChunks = ceil(size / chunkSize), persist the tmp folder immediately.)
+     * Create a new session — totalChunks = ceil(size / chunkSize), persist the tmp folder immediately.
      */
     public async initSession(
         filename: string,
@@ -76,8 +74,7 @@ export class UploadService {
     }
 
     /**
-     * Ghi 1 chunk vào `<tmp>/<id>/<n>.part`. Idempotent — gọi lại cùng index ghi đè.
-     * (EN: Write a single chunk to `<tmp>/<id>/<n>.part`. Idempotent — recalling the same index overwrites.)
+     * Write a single chunk to `<tmp>/<id>/<n>.part`. Idempotent — recalling the same index overwrites.
      */
     public async writeChunk(id: string, index: number, buffer: Buffer): Promise<void> {
         const session = this.requireSession(id)
@@ -94,8 +91,7 @@ export class UploadService {
     }
 
     /**
-     * Trả về status + bitmap để client biết chunk nào còn thiếu khi resume.
-     * (EN: Return status + bitmap so the client knows which chunks are still missing on resume.)
+     * Return status + bitmap so the client knows which chunks are still missing on resume.
      */
     public getStatus(id: string): SessionStatusResponse {
         const session = this.requireSession(id)
@@ -115,13 +111,11 @@ export class UploadService {
     }
 
     /**
-     * Merge mọi chunk theo thứ tự + tính SHA-256 cùng pass + cleanup tmp folder.
-     * (EN: Merge every chunk in order, compute SHA-256 in the same pass, then clean up the tmp folder.)
+     * Merge every chunk in order, compute SHA-256 in the same pass, then clean up the tmp folder.
      */
     public async finalize(id: string): Promise<FinalizeResponse> {
         const session = this.requireSession(id)
-        // Đảm bảo đủ chunk trước khi merge.
-        // (EN: Ensure all chunks present before merging.)
+        // Ensure all chunks present before merging.
         if (session.receivedChunks.length !== session.totalChunks) {
             throw new BadRequestException(
                 `Missing chunks: ${session.totalChunks - session.receivedChunks.length}`,
@@ -134,8 +128,7 @@ export class UploadService {
         let size = 0
         for (let i = 0; i < session.totalChunks; i++) {
             const rs = createReadStream(join(this.cfg.tmpDir, id, `${i}.part`))
-            // Stream-concat theo đúng thứ tự + tính SHA-256 đồng thời.
-            // (EN: Stream-concatenate in order and compute SHA-256 in the same pass.)
+            // Stream-concatenate in order and compute SHA-256 in the same pass.
             await new Promise<void>((resolve, reject) => {
                 rs.on("data", (chunk: Buffer | string) => {
                     const buf = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk)
@@ -159,8 +152,7 @@ export class UploadService {
     }
 
     /**
-     * Throw 404 nếu session không tồn tại — wrap cho mọi handler dùng id.
-     * (EN: Throw 404 when the session does not exist — wrapper for every handler using id.)
+     * Throw 404 when the session does not exist — wrapper for every handler using id.
      */
     private requireSession(id: string): UploadSession {
         const session = this.sessions.get(id)

@@ -23,8 +23,7 @@ import {
 } from "../../config"
 
 /**
- * S3 module — provides S3Client + S3Service và đảm bảo bucket tồn tại lúc start.
- * (EN: S3 module — provides S3Client + S3Service and ensures the bucket exists at startup.)
+ * S3 module — provides S3Client + S3Service and ensures the bucket exists at startup.
  */
 @Module({
     controllers: [PresignController],
@@ -57,16 +56,17 @@ export class S3Module implements OnModuleInit {
     ) {}
 
     /**
-     * Đảm bảo bucket tồn tại — idempotent: HEAD trước, tạo nếu thiếu.
-     * (EN: Ensure the bucket exists — idempotent: HEAD first, create when missing.)
+     * Ensure the bucket exists — idempotent: HEAD first, create when missing.
      */
     async onModuleInit(): Promise<void> {
         const cfg = this.configService.getOrThrow<S3ConfigShape>(S3_CONFIG_TOKEN)
         try {
             await this.s3.send(new HeadBucketCommand({ Bucket: cfg.bucket }))
+            // Bucket already exists — nothing to do.
             this.logger.log(`Bucket "${cfg.bucket}" already exists`)
         } catch {
             try {
+                // Bucket missing — create it now (first boot or volume wipe).
                 await this.s3.send(new CreateBucketCommand({ Bucket: cfg.bucket }))
                 this.logger.log(`Bucket "${cfg.bucket}" created`)
             } catch (err) {

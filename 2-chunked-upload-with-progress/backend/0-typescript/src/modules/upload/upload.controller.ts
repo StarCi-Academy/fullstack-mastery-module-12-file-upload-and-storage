@@ -29,8 +29,7 @@ import type {
 } from "./upload.types"
 
 /**
- * Body của POST /uploads/init — filename hiển thị + size để server tính `totalChunks`.
- * (EN: Body of POST /uploads/init — display filename + size so the server can compute `totalChunks`.)
+ * Body of POST /uploads/init — display filename + size so the server can compute `totalChunks`.
  */
 export class InitSessionDto {
     @IsString()
@@ -48,16 +47,14 @@ export class InitSessionDto {
 }
 
 /**
- * Controller chunked upload — init / status / patch chunk / finalize.
- * (EN: Chunked upload controller — init / status / patch chunk / finalize.)
+ * Chunked upload controller — init / status / patch chunk / finalize.
  */
 @Controller("uploads")
 export class UploadController {
     public constructor(private readonly uploadService: UploadService) {}
 
     /**
-     * Tạo session mới — trả `sessionId` + `totalChunks` để client lên kế hoạch PATCH.
-     * (EN: Create a new session — return `sessionId` + `totalChunks` so the client can plan PATCHes.)
+     * Create a new session — return `sessionId` + `totalChunks` so the client can plan PATCHes.
      */
     @Post("init")
     @HttpCode(201)
@@ -66,8 +63,7 @@ export class UploadController {
     }
 
     /**
-     * Trả status + bitmap để client biết chunk nào skip khi resume.
-     * (EN: Return status + bitmap so the client knows which chunks to skip on resume.)
+     * Return status + bitmap so the client knows which chunks to skip on resume.
      */
     @Get(":id/status")
     public status(@Param("id") id: string): SessionStatusResponse {
@@ -75,8 +71,7 @@ export class UploadController {
     }
 
     /**
-     * Đọc raw body chunk N rồi ghi xuống `<tmp>/<uploadId>/<N>.part`.
-     * (EN: Drain raw chunk N body and write to `<tmp>/<uploadId>/<N>.part`.)
+     * Drain raw chunk N body and write to `<tmp>/<uploadId>/<N>.part`.
      */
     @Patch(":id/chunks")
     @HttpCode(204)
@@ -90,8 +85,7 @@ export class UploadController {
     }
 
     /**
-     * Merge mọi chunk theo thứ tự + tính SHA-256 + xoá tmp folder.
-     * (EN: Merge every chunk in order, compute SHA-256, then remove the tmp folder.)
+     * Merge every chunk in order, compute SHA-256, then remove the tmp folder.
      */
     @Post(":id/finalize")
     @HttpCode(200)
@@ -100,8 +94,7 @@ export class UploadController {
     }
 
     /**
-     * Drain `req` stream thành Buffer — KHÔNG dùng bodyParser cho route này để giữ raw bytes.
-     * (EN: Drain the `req` stream into a Buffer — body parser is disabled on this route to keep raw bytes.)
+     * Drain the `req` stream into a Buffer — body parser is disabled on this route to keep raw bytes.
      */
     private async readBody(req: Request): Promise<Buffer> {
         return new Promise<Buffer>((resolve, reject) => {

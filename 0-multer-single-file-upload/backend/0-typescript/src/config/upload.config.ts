@@ -1,8 +1,7 @@
 import { registerAs } from "@nestjs/config"
 
 /**
- * Cấu hình upload đọc từ environment, dùng cho MulterModule và validator pipe.
- * (EN: Upload configuration read from environment, used by MulterModule and validator pipe.)
+ * Upload configuration read from environment, used by MulterModule and validator pipe.
  */
 export interface UploadConfig {
     dest: string
@@ -11,8 +10,7 @@ export interface UploadConfig {
 }
 
 /**
- * registerAs factory cho config namespace "upload" — inject qua ConfigService.
- * (EN: registerAs factory for the "upload" config namespace — injected via ConfigService.)
+ * registerAs factory for the "upload" config namespace — injected via ConfigService.
  */
 export const uploadConfig = registerAs<UploadConfig>("upload", () => ({
     dest: process.env.UPLOAD_DEST ?? "uploads",

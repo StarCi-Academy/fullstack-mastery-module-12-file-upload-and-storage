@@ -12,8 +12,7 @@ import {
 } from "./modules/upload"
 
 /**
- * Root module — wire ConfigModule global + UploadModule.
- * (EN: Root module — wires the global ConfigModule plus UploadModule.)
+ * Root module — wires the global ConfigModule plus UploadModule.
  */
 @Module({
     imports: [

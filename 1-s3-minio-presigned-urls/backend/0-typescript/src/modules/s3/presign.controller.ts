@@ -15,30 +15,27 @@ import {
 
 /**
  * PresignController — HTTP endpoints to mint short-lived presigned PUT/GET URLs.
- * (EN: PresignController — HTTP endpoints to mint short-lived presigned PUT/GET URLs.)
  *
- * Endpoints khớp với `vi.md §2.1.4` luồng test PowerShell + cURL.
- * (EN: Endpoints match `vi.md §2.1.4` PowerShell + cURL test flows.)
+ * Endpoints match `vi.md §2.1.4` test flows.
  */
 @Controller("presign")
 export class PresignController {
     constructor(private readonly s3Service: S3Service) {}
 
     /**
-     * Ký URL PUT ngắn hạn để client upload thẳng lên MinIO/S3.
-     * (EN: Sign a short-lived PUT URL so the client uploads directly to MinIO/S3.)
+     * Sign a short-lived PUT URL so the client uploads directly to MinIO/S3.
      */
     @Post("put")
     async createPutUrl(
         @Body() dto: PresignPutDto,
     ): Promise<PresignedUploadInfo & { filename: string }> {
         const info = await this.s3Service.createUploadUrl(dto.contentType)
+        // Return filename from request body alongside the signed upload info.
         return { ...info, filename: dto.filename }
     }
 
     /**
-     * Ký URL GET ngắn hạn cho download — bucket giữ private.
-     * (EN: Sign a short-lived GET URL for download — bucket stays private.)
+     * Sign a short-lived GET URL for download — bucket stays private.
      */
     @Get("get/:key")
     async createGetUrl(

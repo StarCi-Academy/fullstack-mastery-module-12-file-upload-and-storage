@@ -1,10 +1,11 @@
 /**
  * Base URL for the backend API.
  * In the embedded sandbox, VITE_API_BASE is string-replaced with the mock session URL.
- * Locally, falls back to http://localhost:3000.
+ * Locally, falls back to http://127.0.0.1:3000 (the backend binds IPv4 127.0.0.1
+ * only, so "localhost" would risk resolving to IPv6 ::1 and missing it).
  */
 export const API_BASE = new URL(
-    import.meta.env.VITE_API_BASE ?? "http://localhost:3000",
+    import.meta.env.VITE_API_BASE ?? "http://127.0.0.1:3000",
 ).origin
 
 /**

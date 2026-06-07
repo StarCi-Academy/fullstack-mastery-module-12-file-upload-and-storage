@@ -7,7 +7,9 @@
 import { defineConfig, devices } from "@playwright/test"
 
 const FE_PORT = Number(process.env.FE_PORT ?? 3001)
-const BASE_URL = process.env.PLAYWRIGHT_BASE_URL ?? `http://localhost:${FE_PORT}`
+// Use 127.0.0.1 (not "localhost"): the backends bind IPv4 127.0.0.1 only (Windows
+// Firewall workaround), so resolving "localhost" to IPv6 ::1 would miss them.
+const BASE_URL = process.env.PLAYWRIGHT_BASE_URL ?? `http://127.0.0.1:${FE_PORT}`
 
 export default defineConfig({
     testDir: "./scripts",
@@ -46,7 +48,8 @@ export default defineConfig({
             reuseExistingServer: !process.env.CI,
             timeout: 120_000,
             env: {
-                VITE_API_BASE: "http://localhost:3000",
+                // 127.0.0.1, not localhost — backend binds IPv4 only (see note above).
+                VITE_API_BASE: "http://127.0.0.1:3000",
             },
         },
     ],

@@ -13,8 +13,7 @@ import {
 } from "./app.module"
 
 /**
- * Khởi động NestJS app — bodyParser tắt để route PATCH nhận raw bytes; CORS enabled cho HTML client.
- * (EN: Bootstrap the NestJS app — bodyParser disabled so PATCH receives raw bytes; CORS enabled for HTML client.)
+ * Bootstrap the NestJS app — bodyParser disabled so PATCH receives raw bytes; CORS enabled for HTML client.
  */
 async function bootstrap(): Promise<void> {
     const app = await NestFactory.create(AppModule, { bodyParser: false })
@@ -26,8 +25,7 @@ async function bootstrap(): Promise<void> {
         }),
     )
     app.enableCors()
-    // Enable JSON parser CHỈ cho route không phải PATCH chunk (init / finalize).
-    // (EN: Enable JSON parser ONLY for non-PATCH-chunk routes (init / finalize).)
+    // Enable JSON parser ONLY for non-PATCH-chunk routes (init / finalize).
     const express = await import("express")
     app.use(express.json({ limit: "1mb" }))
     const configService = app.get(ConfigService)

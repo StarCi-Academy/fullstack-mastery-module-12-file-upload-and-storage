@@ -3,8 +3,7 @@ import {
 } from "@nestjs/config"
 
 /**
- * Token đăng ký namespace `s3` trong ConfigService — single source of truth cho MinIO/S3 config.
- * (EN: Registers the `s3` namespace in ConfigService — single source of truth for MinIO/S3 config.)
+ * Registers the `s3` namespace in ConfigService — single source of truth for MinIO/S3 config.
  */
 export const S3_CONFIG_TOKEN = "s3"
 

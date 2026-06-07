@@ -3,8 +3,7 @@ import {
 } from "@nestjs/config"
 
 /**
- * Token đăng ký namespace `tus` trong ConfigService — single source of truth cho tus server config.
- * (EN: Registers the `tus` namespace in ConfigService — single source of truth for tus server config.)
+ * Registers the `tus` namespace in ConfigService — single source of truth for tus server config.
  */
 export const TUS_CONFIG_TOKEN = "tus"
 

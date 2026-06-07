@@ -28,8 +28,7 @@ export interface PresignedUploadInfo {
 }
 
 /**
- * S3Service — bọc AWS SDK v3 + s3-request-presigner để ký PUT/GET URL ngắn hạn.
- * (EN: S3Service — wraps AWS SDK v3 + s3-request-presigner to sign short-lived PUT/GET URLs.)
+ * S3Service — wraps AWS SDK v3 + s3-request-presigner to sign short-lived PUT/GET URLs.
  */
 @Injectable()
 export class S3Service {
@@ -43,20 +42,20 @@ export class S3Service {
     }
 
     /**
-     * Ký URL PUT cho client upload thẳng — không qua backend.
-     * (EN: Sign a PUT URL so the client uploads directly — bypassing the backend.)
+     * Sign a PUT URL so the client uploads directly — bypassing the backend.
      */
     async createUploadUrl(contentType: string): Promise<PresignedUploadInfo> {
+        // Key = timestamp + UUID — no extension, no userId, no month prefix in this demo.
         const key = `${Date.now()}-${randomUUID()}`
-        // Lệnh đại diện cho thao tác PUT object lên bucket.
-        // (EN: Command representing the PUT object operation on the bucket.)
+        // Command representing the PUT object operation on the bucket.
         const command = new PutObjectCommand({
             Bucket: this.cfg.bucket,
             Key: key,
+            // When ContentType is signed (as here), the client must send the same
+            // value in its PUT header, otherwise MinIO rejects with 403.
             ContentType: contentType,
         })
-        // getSignedUrl ký URL với TTL — client upload thẳng tới MinIO.
-        // (EN: getSignedUrl signs the URL with TTL — client uploads straight to MinIO.)
+        // getSignedUrl embeds HMAC-SHA256 signature + expiry into URL query string.
         const url = await getSignedUrl(this.s3, command, {
             expiresIn: this.cfg.presignExpiresSeconds,
         })
@@ -64,12 +63,10 @@ export class S3Service {
     }
 
     /**
-     * Ký URL GET ngắn hạn — bucket giữ private nhưng cho phép download tạm thời.
-     * (EN: Sign a short-lived GET URL — the bucket stays private but allows temporary downloads.)
+     * Sign a short-lived GET URL — the bucket stays private but allows temporary downloads.
      */
     async createDownloadUrl(key: string): Promise<string> {
-        // Lệnh GET object — presigner sẽ ký với cùng credential.
-        // (EN: GET object command — presigner signs it with the same credentials.)
+        // GET object command — presigner signs it with the same credentials.
         const command = new GetObjectCommand({ Bucket: this.cfg.bucket, Key: key })
         return getSignedUrl(this.s3, command, {
             expiresIn: this.cfg.presignExpiresSeconds,

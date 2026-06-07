@@ -4,16 +4,16 @@ import { AppModule } from "./app.module"
 import { MulterExceptionFilter } from "./common"
 
 /**
- * Bootstrap — chạy NestJS HTTP server, port lấy từ env (default 3000).
- * (EN: Bootstrap — runs NestJS HTTP server, port read from env (default 3000).)
+ * Bootstrap — runs NestJS HTTP server, port read from env (default 3000).
+ * Bind to 127.0.0.1 to avoid Windows Firewall prompts on non-loopback addresses.
  */
 async function bootstrap(): Promise<void> {
     const app = await NestFactory.create(AppModule)
     app.enableCors()
     app.useGlobalFilters(new MulterExceptionFilter())
     const port = Number(process.env.PORT ?? 3000)
-    await app.listen(port)
-    Logger.log(`App listening on http://localhost:${port}`, "Bootstrap")
+    await app.listen(port, "127.0.0.1")
+    Logger.log(`App listening on http://127.0.0.1:${port}`, "Bootstrap")
 }
 
 void bootstrap()

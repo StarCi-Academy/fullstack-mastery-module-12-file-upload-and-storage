@@ -12,8 +12,7 @@ import {
 } from "./modules/s3"
 
 /**
- * Root module — wire ConfigModule global + feature modules.
- * (EN: Root module — wires the global ConfigModule plus feature modules.)
+ * Root module — wires the global ConfigModule plus feature modules.
  */
 @Module({
     imports: [

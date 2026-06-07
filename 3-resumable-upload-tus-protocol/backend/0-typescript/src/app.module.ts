@@ -12,8 +12,7 @@ import {
 } from "./modules/tus"
 
 /**
- * Root module — wire ConfigModule global + TusModule feature module.
- * (EN: Root module — wires the global ConfigModule plus the TusModule feature module.)
+ * Root module — wires the global ConfigModule plus the TusModule feature module.
  */
 @Module({
     imports: [

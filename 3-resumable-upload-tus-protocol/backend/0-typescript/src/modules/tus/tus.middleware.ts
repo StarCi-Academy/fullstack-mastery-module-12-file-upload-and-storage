@@ -25,8 +25,7 @@ import {
 } from "../../config"
 
 /**
- * Middleware forward request đến @tus/server — Server tự xử lý HEAD/PATCH/POST/OPTIONS.
- * (EN: Middleware forwarding requests to @tus/server — the Server handles HEAD/PATCH/POST/OPTIONS itself.)
+ * Middleware forwarding requests to @tus/server — the Server handles HEAD/PATCH/POST/OPTIONS itself.
  */
 @Injectable()
 export class TusMiddleware implements NestMiddleware, OnModuleInit {
@@ -36,10 +35,11 @@ export class TusMiddleware implements NestMiddleware, OnModuleInit {
     constructor(private readonly config: ConfigService) {}
 
     async onModuleInit(): Promise<void> {
-        const cfg = this.config.get<TusConfigShape>("tus")!
+        const cfg = this.config.get<TusConfigShape>(TUS_CONFIG_TOKEN)!
+        // Ensure the upload directory exists before tus Server starts.
         await fs.mkdir(cfg.directory, { recursive: true })
-        // Boot tus Server với FileStore — datastore tự lưu offset cho từng upload.
-        // (EN: Boot tus Server with FileStore — datastore tracks per-upload offset.)
+        // Boot tus Server with FileStore — datastore tracks per-upload offset
+        // in a .json sidecar file alongside the upload bytes.
         this.server = new Server({
             path: cfg.path,
             datastore: new FileStore({ directory: cfg.directory }),
@@ -48,8 +48,9 @@ export class TusMiddleware implements NestMiddleware, OnModuleInit {
     }
 
     use(req: Request, res: Response, _next: NextFunction): void {
-        // Forward request sang tus Server — nó tự xử lý HEAD/PATCH/POST/OPTIONS.
-        // (EN: Forward request to tus Server — it owns HEAD/PATCH/POST/OPTIONS.)
+        // Forward request to tus Server — it owns HEAD/PATCH/POST/OPTIONS.
+        // Passing raw req/res bypasses NestJS body parsing so tus can read
+        // the binary PATCH stream directly from the Node.js socket.
         this.server.handle(req, res)
     }
 }
