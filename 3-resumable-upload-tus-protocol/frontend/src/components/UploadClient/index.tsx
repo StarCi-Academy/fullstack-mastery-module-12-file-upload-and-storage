@@ -1,5 +1,5 @@
 import { useCallback, useRef, useState } from "react"
-import { Button, Chip } from "@heroui/react"
+import { Button, Chip, Label, Typography } from "@heroui/react"
 import * as tus from "tus-js-client"
 import { TUS_ENDPOINT } from "../../lib"
 import { FileDropzone } from "./FileDropzone"
@@ -23,7 +23,7 @@ type UploadStatus = "idle" | "running" | "paused" | "done" | "error"
  * can pause mid-upload, refresh the page, and click Resume — the library HEADs
  * the server to read Upload-Offset and continues from that byte.
  */
-export function UploadClient(): JSX.Element {
+export const UploadClient = (): JSX.Element => {
     const [file, setFile] = useState<File | null>(null)
     const [status, setStatus] = useState<UploadStatus>("idle")
     const [percent, setPercent] = useState<number>(0)
@@ -132,10 +132,10 @@ export function UploadClient(): JSX.Element {
     }
 
     return (
-        <div className="flex flex-col">
+        <div className="flex flex-col gap-6">
             {/* Status chip — top of form, same as L0/L1/L2 */}
             <div className="flex items-center gap-2">
-                <span className="text-sm font-medium text-foreground">Upload Status</span>
+                <Label>Upload Status</Label>
                 <Chip
                     data-testid="upload-status"
                     color={chipColor(status).textColor}
@@ -146,74 +146,71 @@ export function UploadClient(): JSX.Element {
                 </Chip>
             </div>
 
-            <div className="h-6" />
+            <div className="flex flex-col gap-3">
+                <FileDropzone file={file} onFileSelect={onFileSelect} />
+                {file && (
+                    <Typography.Paragraph size="xs" color="muted">
+                        {file.name} — {file.type || "unknown MIME"}
+                    </Typography.Paragraph>
+                )}
 
-            <FileDropzone file={file} onFileSelect={onFileSelect} />
-            {file && (
-                <p className="mt-1.5 text-xs text-muted">
-                    {file.name} — {file.type || "unknown MIME"}
-                </p>
-            )}
-
-            <div className="h-6" />
-
-            {/* Action buttons */}
-            <div className="flex gap-2">
-                <Button
-                    data-testid="start-btn"
-                    variant="primary"
-                    isDisabled={!file || status === "running" || status === "done"}
-                    onPress={handleStart}
-                >
-                    Start
-                </Button>
-                <Button
-                    data-testid="pause-btn"
-                    variant="secondary"
-                    isDisabled={status !== "running"}
-                    onPress={handlePause}
-                >
-                    Pause
-                </Button>
-                <Button
-                    data-testid="resume-btn"
-                    variant="secondary"
-                    isDisabled={status !== "paused"}
-                    onPress={handleResume}
-                >
-                    Resume
-                </Button>
+                {/* Action buttons */}
+                <div className="flex gap-2">
+                    <Button
+                        data-testid="start-btn"
+                        variant="primary"
+                        isDisabled={!file || status === "running" || status === "done"}
+                        onPress={handleStart}
+                    >
+                        Start
+                    </Button>
+                    <Button
+                        data-testid="pause-btn"
+                        variant="outline"
+                        isDisabled={status !== "running"}
+                        onPress={handlePause}
+                    >
+                        Pause
+                    </Button>
+                    <Button
+                        data-testid="resume-btn"
+                        variant="outline"
+                        isDisabled={status !== "paused"}
+                        onPress={handleResume}
+                    >
+                        Resume
+                    </Button>
+                </div>
             </div>
-
-            <div className="h-6" />
 
             {/* Progress bar + label */}
-            <label className="text-sm font-medium text-foreground">Progress</label>
-            <div className="h-1.5" />
-            <div className="h-3 w-full overflow-hidden rounded-full bg-default-100">
-                <div
-                    data-testid="progress"
-                    className="h-full bg-accent transition-[width] duration-300"
-                    style={{ width: `${percent}%` }}
-                    aria-label={`${percent}%`}
-                />
+            <div className="flex flex-col gap-1.5">
+                <Label>Progress</Label>
+                <div className="h-3 w-full overflow-hidden rounded-full bg-default-100">
+                    <div
+                        data-testid="progress"
+                        className="h-full bg-accent transition-[width] duration-300"
+                        style={{ width: `${percent}%` }}
+                        aria-label={`${percent}%`}
+                    />
+                </div>
+                <Typography.Paragraph size="sm" color="muted">
+                    {percent}% complete
+                </Typography.Paragraph>
             </div>
-            <div className="h-1.5" />
-            <div className="text-sm text-muted">{percent}% complete</div>
 
             {/* Upload URL when done */}
             {uploadUrl && (
-                <>
-                    <div className="h-6" />
-                    <label className="text-sm font-medium text-foreground">Upload URL</label>
-                    <div className="h-1.5" />
-                    <div
+                <div className="flex flex-col gap-1.5">
+                    <Label>Upload URL</Label>
+                    <Typography.Paragraph
                         data-testid="result"
-                        className="break-all text-sm text-foreground"
+                        size="sm"
+                        className="break-all"
                     >
                         {uploadUrl}
-                    </div>
-                </>
+                    </Typography.Paragraph>
+                </div>
             )}
         </div>
     )

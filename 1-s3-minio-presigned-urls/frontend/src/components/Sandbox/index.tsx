@@ -7,6 +7,6 @@ import { UploadClient } from "../UploadClient"
  * the same UploadClient as Local. The split structure is kept for consistency with
  * all other course lesson frontends.
  */
-export function Sandbox(): JSX.Element {
+export const Sandbox = (): JSX.Element => {
     return <UploadClient />
 }

@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react"
-import { Button, Chip, Input, Spinner } from "@heroui/react"
+import { Button, Chip, Input, Label, Spinner, Typography } from "@heroui/react"
 import { FileDropzone } from "./FileDropzone"
 import {
     initSession,
@@ -20,7 +20,7 @@ import {
  *   result-meta      — text block showing sha256 + path after successful finalize
  *   error-msg        — error message text (only visible on error)
  */
-export function UploadClient(): JSX.Element {
+export const UploadClient = (): JSX.Element => {
     // The selected file
     const [file, setFile] = useState<File | null>(null)
     // session id — auto-filled after init, can be pasted for resume
@@ -163,10 +163,10 @@ export function UploadClient(): JSX.Element {
     }
 
     return (
-        <div className="flex flex-col">
+        <div className="flex flex-col gap-6">
             {/* Status chip — top of form, same as L0/L1 */}
             <div className="flex items-center gap-2">
-                <span className="text-sm font-medium text-foreground">Upload Status</span>
+                <Label>Upload Status</Label>
                 <Chip
                     data-testid="upload-status"
                     color={chipColor(status).textColor}
@@ -177,28 +177,25 @@ export function UploadClient(): JSX.Element {
                 </Chip>
             </div>
 
-            <div className="h-6" />
-
-            <FileDropzone file={file} onFileSelect={onFileSelect} isDisabled={busy} />
-            {file && (
-                <p className="mt-1.5 text-xs text-muted">
-                    {file.name} — {(file.size / 1024).toFixed(1)} KB
-                </p>
-            )}
-            <div className="h-6" />
+            <div className="flex flex-col gap-3">
+                <FileDropzone file={file} onFileSelect={onFileSelect} isDisabled={busy} />
+                {file && (
+                    <Typography.Paragraph size="xs" color="muted">
+                        {file.name} — {(file.size / 1024).toFixed(1)} KB
+                    </Typography.Paragraph>
+                )}
+            </div>
 
             {/* Session ID — auto-filled after init, can be pasted to resume */}
-            <label className="text-sm font-medium text-foreground">
-                Session ID (auto-filled — paste to resume)
-            </label>
-            <div className="h-1.5" />
-            <Input
-                value={sessionId}
-                onChange={(e) => setSessionId(e.target.value)}
-                placeholder="auto-filled after Upload"
-                aria-label="Session ID"
-            />
-            <div className="h-6" />
+            <div className="flex flex-col gap-1.5">
+                <Label>Session ID (auto-filled — paste to resume)</Label>
+                <Input
+                    value={sessionId}
+                    onChange={(e) => setSessionId(e.target.value)}
+                    placeholder="auto-filled after Upload"
+                    aria-label="Session ID"
+                />
+            </div>
 
             {/* Action buttons */}
             <div className="flex items-center gap-3">
@@ -214,7 +211,7 @@ export function UploadClient(): JSX.Element {
                     </span>
                 </Button>
                 <Button
-                    variant="secondary"
+                    variant="outline"
                     isDisabled={!file || !sessionId || busy}
                     onPress={handleResume}
                     data-testid="resume-btn"
@@ -225,72 +222,67 @@ export function UploadClient(): JSX.Element {
                     </span>
                 </Button>
             </div>
-            <div className="h-6" />
 
             {/* Overall progress bar */}
-            <label className="text-sm font-medium text-foreground">
-                Overall progress
-            </label>
-            <div className="h-1.5" />
-            <div className="flex items-center gap-3">
-                <progress
-                    data-testid="progress"
-                    value={progress}
-                    max={100}
-                    className="h-2 flex-1 rounded-full overflow-hidden appearance-none [&::-webkit-progress-bar]:bg-default-100 [&::-webkit-progress-value]:bg-accent [&::-webkit-progress-value]:rounded-full"
-                />
-                <span className="text-sm font-semibold text-foreground w-10 text-right">
-                    {progress}%
-                </span>
+            <div className="flex flex-col gap-1.5">
+                <Label>Overall progress</Label>
+                <div className="flex items-center gap-3">
+                    <progress
+                        data-testid="progress"
+                        value={progress}
+                        max={100}
+                        className="h-2 flex-1 rounded-full overflow-hidden appearance-none [&::-webkit-progress-bar]:bg-default-100 [&::-webkit-progress-value]:bg-accent [&::-webkit-progress-value]:rounded-full"
+                    />
+                    <Typography.Paragraph size="sm" weight="semibold" className="w-10 text-right">
+                        {progress}%
+                    </Typography.Paragraph>
+                </div>
             </div>
-            <div className="h-6" />
 
             {/* Per-chunk progress (only shown when chunks are known) */}
             {chunkPcts.length > 1 && (
-                <>
-                    <label className="text-sm font-medium text-foreground">
-                        Chunks ({chunkPcts.length})
-                    </label>
-                    <div className="h-1.5" />
+                <div className="flex flex-col gap-1.5">
+                    <Label>Chunks ({chunkPcts.length})</Label>
                     <div className="flex flex-col gap-1.5">
                         {chunkPcts.map((pct, i) => (
                             <div key={i} className="flex items-center gap-2">
-                                <span className="text-xs text-muted w-16 flex-shrink-0">
+                                <Typography.Paragraph size="xs" color="muted" className="w-16 flex-shrink-0">
                                     Chunk {i}
-                                </span>
+                                </Typography.Paragraph>
                                 <progress
                                     value={pct}
                                     max={100}
                                     className="h-1.5 flex-1 rounded-full overflow-hidden appearance-none [&::-webkit-progress-bar]:bg-default-100 [&::-webkit-progress-value]:bg-accent"
                                 />
-                                <span className="text-xs text-muted w-8 text-right">
+                                <Typography.Paragraph size="xs" color="muted" className="w-8 text-right">
                                     {pct}%
-                                </span>
+                                </Typography.Paragraph>
                             </div>
                         ))}
                     </div>
-                    <div className="h-3" />
-                </>
+                </div>
             )}
 
             {/* Result metadata (shown after successful finalize) */}
             {result && (
-                <div data-testid="result-meta" className="text-sm text-foreground">
-                    <div className="font-semibold mb-1.5">Upload complete</div>
-                    <div className="text-muted text-xs space-y-0.5">
-                        <div>filename: {result.filename}</div>
-                        <div>size: {result.size} B</div>
-                        <div>sha256: {result.sha256}</div>
-                        <div>path: {result.path}</div>
+                <div data-testid="result-meta" className="flex flex-col gap-1.5">
+                    <Typography.Paragraph size="sm" weight="semibold">
+                        Upload complete
+                    </Typography.Paragraph>
+                    <div className="flex flex-col gap-0.5">
+                        <Typography.Paragraph size="xs" color="muted">filename: {result.filename}</Typography.Paragraph>
+                        <Typography.Paragraph size="xs" color="muted">size: {result.size} B</Typography.Paragraph>
+                        <Typography.Paragraph size="xs" color="muted" className="break-all">sha256: {result.sha256}</Typography.Paragraph>
+                        <Typography.Paragraph size="xs" color="muted" className="break-all">path: {result.path}</Typography.Paragraph>
                     </div>
                 </div>
             )}
 
             {/* Error message */}
             {isError && error && (
-                <div data-testid="error-msg" className="text-sm text-danger">
+                <Typography.Paragraph data-testid="error-msg" size="sm" className="text-danger">
                     {error}
-                </div>
+                </Typography.Paragraph>
             )}
         </div>
     )

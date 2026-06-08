@@ -28,10 +28,7 @@ export interface PresignGetResponse {
  * The backend signs the URL using HMAC-SHA256; the client can then PUT
  * directly to MinIO without going through NestJS.
  */
-export async function requestPresignPut(
-    filename: string,
-    contentType: string,
-): Promise<PresignPutResponse> {
+export const requestPresignPut = async (filename: string, contentType: string): Promise<PresignPutResponse> => {
     const res = await fetch(`${API_ORIGIN}/presign/put`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -48,7 +45,7 @@ export async function requestPresignPut(
  * Request a short-lived presigned GET URL from the backend.
  * The bucket stays private; only the signed URL allows reading the object.
  */
-export async function requestPresignGet(key: string): Promise<PresignGetResponse> {
+export const requestPresignGet = async (key: string): Promise<PresignGetResponse> => {
     const encodedKey = encodeURIComponent(key)
     const res = await fetch(`${API_ORIGIN}/presign/get/${encodedKey}`)
     if (!res.ok) {
@@ -63,10 +60,7 @@ export async function requestPresignGet(key: string): Promise<PresignGetResponse
  * NestJS is NOT involved — MinIO validates the HMAC-SHA256 signature itself.
  * Returns the ETag from the MinIO response headers.
  */
-export async function putFileToMinIO(
-    presignedUrl: string,
-    file: File,
-): Promise<string> {
+export const putFileToMinIO = async (presignedUrl: string, file: File): Promise<string> => {
     const res = await fetch(presignedUrl, {
         method: "PUT",
         headers: { "Content-Type": file.type || "application/octet-stream" },

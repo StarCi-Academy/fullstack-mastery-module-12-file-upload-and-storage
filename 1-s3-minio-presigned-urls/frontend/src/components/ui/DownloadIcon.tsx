@@ -1,7 +1,6 @@
-/**
- * Inline SVG download icon — zero external deps (required by lesson-ui.rules §6).
- */
-export function DownloadIcon({ className }: { className?: string }): JSX.Element {
+interface DownloadIconProps { className?: string }
+
+export const DownloadIcon = ({ className }: DownloadIconProps): JSX.Element => {
     return (
         <svg
             xmlns="http://www.w3.org/2000/svg"

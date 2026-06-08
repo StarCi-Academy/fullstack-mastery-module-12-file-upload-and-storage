@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react"
-import { Button, Chip, Spinner } from "@heroui/react"
+import { Button, Chip, Label, Spinner, Typography } from "@heroui/react"
 import useSWRMutation from "swr/mutation"
 import { UPLOAD_PATH, type UploadedFileInfo, type UploadErrorBody } from "../../lib"
 import { FileDropzone } from "./FileDropzone"
@@ -10,10 +10,7 @@ type UploadStatus = "idle" | "uploading" | "success" | "error"
 // ---- SWR mutation fetcher -------------------------------------------------------
 
 /** POST FormData to the upload endpoint, returns the parsed JSON body + status. */
-async function postFile(
-    _key: string,
-    { arg }: { arg: File }
-): Promise<{ status: number; body: UploadedFileInfo | UploadErrorBody }> {
+const postFile = async (_key: string, { arg }: { arg: File }): Promise<{ status: number; body: UploadedFileInfo | UploadErrorBody }> => {
     const form = new FormData()
     // Field name MUST match FileInterceptor("file") in upload.controller.ts.
     form.append("file", arg)
@@ -24,7 +21,7 @@ async function postFile(
 
 // ---- format helper -------------------------------------------------------
 
-function formatBytes(bytes: number): string {
+const formatBytes = (bytes: number): string => {
     if (bytes < 1024) return `${bytes} B`
     if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
     return `${(bytes / (1024 * 1024)).toFixed(2)} MB`
@@ -41,7 +38,7 @@ function formatBytes(bytes: number): string {
  *   - `result-meta`     : container with originalName, filename, size, mimetype, path
  *   - `error-msg`       : container with HTTP status code + error message
  */
-export function UploadClient(): JSX.Element {
+export const UploadClient = (): JSX.Element => {
     const [dropzoneKey, setDropzoneKey] = useState(0)
     const [selectedFile, setSelectedFile] = useState<File | null>(null)
     const [uploadStatus, setUploadStatus] = useState<UploadStatus>("idle")
@@ -115,98 +112,91 @@ export function UploadClient(): JSX.Element {
     const canUpload = selectedFile !== null && !isMutating
 
     return (
-        <div className="flex flex-col">
+        <div className="flex flex-col gap-6">
             {/* Status chip */}
             <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-foreground">Upload Status</span>
-            <Chip
-                data-testid="upload-status"
-                color={chipColor(uploadStatus).textColor}
-                size="sm"
-                className={`w-fit capitalize ${chipColor(uploadStatus).bgClass}`}
-            >
+                <Label>Upload Status</Label>
+                <Chip
+                    data-testid="upload-status"
+                    color={chipColor(uploadStatus).textColor}
+                    size="sm"
+                    className={`w-fit capitalize ${chipColor(uploadStatus).bgClass}`}
+                >
                     {uploadStatus}
                 </Chip>
             </div>
-            <div className="h-6" />
-            <FileDropzone
-                key={dropzoneKey}
-                file={selectedFile}
-                onFileSelect={onFileSelect}
-            />
-            {selectedFile && (
-                <p className="mt-1.5 text-xs text-muted">
-                    {selectedFile.name} — {formatBytes(selectedFile.size)} — {selectedFile.type || "unknown MIME"}
-                </p>
-            )}
 
-            <div className="h-3" />
+            <div className="flex flex-col gap-3">
+                <FileDropzone
+                    key={dropzoneKey}
+                    file={selectedFile}
+                    onFileSelect={onFileSelect}
+                />
+                {selectedFile && (
+                    <Typography.Paragraph size="xs" color="muted">
+                        {selectedFile.name} — {formatBytes(selectedFile.size)} — {selectedFile.type || "unknown MIME"}
+                    </Typography.Paragraph>
+                )}
 
-            {/* Action buttons */}
-            <div className="flex gap-3">
-                <Button
-                    data-testid="upload-btn"
-                    variant="primary"
-                    isDisabled={!canUpload}
-                    onPress={handleUpload}
-                >
-                    <span className="flex items-center gap-2">
-                        {isMutating && <Spinner size="sm" color="current" />}
-                        Upload
-                    </span>
-                </Button>
-                <Button variant="secondary" onPress={handleReset}>
-                    Reset
-                </Button>
+                {/* Action buttons */}
+                <div className="flex gap-3">
+                    <Button
+                        data-testid="upload-btn"
+                        variant="primary"
+                        isDisabled={!canUpload}
+                        onPress={handleUpload}
+                    >
+                        <span className="flex items-center gap-2">
+                            {isMutating && <Spinner size="sm" color="current" />}
+                            Upload
+                        </span>
+                    </Button>
+                    <Button variant="outline" onPress={handleReset}>
+                        Reset
+                    </Button>
+                </div>
             </div>
 
             {/* Success result */}
             {uploadStatus === "success" && result && (
-                <>
-                    <div className="h-6" />
-                    <div
-                        data-testid="result-meta"
-                        className="text-sm"
-                    >
-                        <p className="mb-3 font-medium text-foreground">
-                            201 Created — upload successful
-                        </p>
-                        <div className="flex flex-col gap-2">
-                            <Row label="originalName" value={result.originalName} />
-                            <Row label="filename" value={result.filename} />
-                            <Row label="size" value={`${result.size} B (${formatBytes(result.size)})`} />
-                            <Row label="mimetype" value={result.mimetype} />
-                            <Row label="path" value={result.path} />
-                        </div>
+                <div data-testid="result-meta" className="flex flex-col gap-3">
+                    <Typography.Paragraph size="sm" weight="medium">
+                        201 Created — upload successful
+                    </Typography.Paragraph>
+                    <div className="flex flex-col gap-2">
+                        <Row label="originalName" value={result.originalName} />
+                        <Row label="filename" value={result.filename} />
+                        <Row label="size" value={`${result.size} B (${formatBytes(result.size)})`} />
+                        <Row label="mimetype" value={result.mimetype} />
+                        <Row label="path" value={result.path} />
                     </div>
-                </>
+                </div>
             )}
 
             {/* Error result */}
             {uploadStatus === "error" && (
-                <>
-                    <div className="h-6" />
-                    <div
-                        data-testid="error-msg"
-                        className="text-sm"
-                    >
-                        <p className="mb-1 font-medium text-danger">
-                            {errorCode !== null ? `${errorCode} Error` : "Network Error"}
-                        </p>
-                        <p className="text-foreground">{errorMsg}</p>
-                    </div>
-                </>
+                <div data-testid="error-msg" className="flex flex-col gap-1.5">
+                    <Typography.Paragraph size="sm" weight="medium" className="text-danger">
+                        {errorCode !== null ? `${errorCode} Error` : "Network Error"}
+                    </Typography.Paragraph>
+                    <Typography.Paragraph size="sm">{errorMsg}</Typography.Paragraph>
+                </div>
             )}
         </div>
     )
 }
 
-/** Single metadata row — label + value. */
-function Row({ label, value }: { label: string; value: string }): JSX.Element {
+interface RowProps { label: string; value: string }
+
+const Row = ({ label, value }: RowProps): JSX.Element => {
     return (
         <div className="flex gap-2">
-            <span className="w-32 shrink-0 font-medium text-muted">{label}</span>
-            <span className="break-all text-foreground">{value}</span>
+            <Typography.Paragraph size="sm" color="muted" className="w-32 shrink-0 font-medium">
+                {label}
+            </Typography.Paragraph>
+            <Typography.Paragraph size="sm" className="break-all">
+                {value}
+            </Typography.Paragraph>
         </div>
     )
 }

@@ -6,6 +6,6 @@ import { UploadClient } from "../UploadClient"
  * tus upload is single-client by nature (one file, one upload slot), so Sandbox
  * renders the same single-client UI as Local — no multi-pane needed.
  */
-export function Sandbox(): JSX.Element {
+export const Sandbox = (): JSX.Element => {
     return <UploadClient />
 }

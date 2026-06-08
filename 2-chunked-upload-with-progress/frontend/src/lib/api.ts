@@ -40,7 +40,7 @@ export interface FinalizeResp {
 }
 
 /** POST /uploads/init — create a new upload session. */
-export async function initSession(filename: string, size: number): Promise<InitResp> {
+export const initSession = async (filename: string, size: number): Promise<InitResp> => {
     const res = await fetch(`${API_BASE}/uploads/init`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -51,14 +51,14 @@ export async function initSession(filename: string, size: number): Promise<InitR
 }
 
 /** GET /uploads/:id/status — get received/missing bitmaps. */
-export async function getStatus(sessionId: string): Promise<StatusResp> {
+export const getStatus = async (sessionId: string): Promise<StatusResp> => {
     const res = await fetch(`${API_BASE}/uploads/${sessionId}/status`)
     if (!res.ok) throw new Error(`status failed — HTTP ${res.status}`)
     return res.json() as Promise<StatusResp>
 }
 
 /** POST /uploads/:id/finalize — assemble chunks and compute SHA-256. */
-export async function finalizeUpload(sessionId: string): Promise<FinalizeResp> {
+export const finalizeUpload = async (sessionId: string): Promise<FinalizeResp> => {
     const res = await fetch(`${API_BASE}/uploads/${sessionId}/finalize`, { method: "POST" })
     if (!res.ok) throw new Error(`finalize failed — HTTP ${res.status}`)
     return res.json() as Promise<FinalizeResp>
@@ -68,12 +68,7 @@ export async function finalizeUpload(sessionId: string): Promise<FinalizeResp> {
  * PATCH /uploads/:id/chunks?index=N — upload a single raw-binary chunk.
  * Uses XHR so upload.onprogress delivers per-chunk byte progress.
  */
-export function patchChunk(
-    sessionId: string,
-    index: number,
-    blob: Blob,
-    onProgress?: (pct: number) => void,
-): Promise<void> {
+export const patchChunk = (sessionId: string, index: number, blob: Blob, onProgress?: (pct: number) => void): Promise<void> => {
     return new Promise((resolve, reject) => {
         const xhr = new XMLHttpRequest()
         xhr.open("PATCH", `${API_BASE}/uploads/${sessionId}/chunks?index=${index}`)

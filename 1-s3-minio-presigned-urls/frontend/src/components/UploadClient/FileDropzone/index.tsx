@@ -1,5 +1,5 @@
 import { useCallback } from "react"
-import { cn } from "@heroui/react"
+import { cn, Label, Typography } from "@heroui/react"
 import { useDropzone } from "react-dropzone"
 
 /** Props for {@link FileDropzone}. */
@@ -16,7 +16,7 @@ export interface FileDropzoneProps {
  *
  * @param props - Selected file state and selection callback
  */
-export function FileDropzone({ file, onFileSelect }: FileDropzoneProps): JSX.Element {
+export const FileDropzone = ({ file, onFileSelect }: FileDropzoneProps): JSX.Element => {
     const onDrop = useCallback(
         (acceptedFiles: Array<File>) => {
             onFileSelect(acceptedFiles[0] ?? null)
@@ -32,21 +32,21 @@ export function FileDropzone({ file, onFileSelect }: FileDropzoneProps): JSX.Ele
 
     return (
         <div className="flex flex-col gap-1.5">
-            <span className="text-sm font-medium text-foreground">File</span>
+            <Label>File</Label>
             <div
                 {...getRootProps()}
                 className={cn(
-                    "flex min-h-24 w-full max-w-md cursor-pointer flex-col items-center justify-center rounded-xl border border-dashed border-border bg-default-100 px-4 py-6 text-center transition-colors",
+                    "flex min-h-24 w-full cursor-pointer flex-col items-center justify-center gap-1 rounded-xl border border-dashed border-border bg-default-100 px-4 py-6 text-center transition-colors",
                     isDragActive && "border-accent bg-accent/10"
                 )}
             >
                 <input {...getInputProps()} data-testid="file-input" />
-                <p className="text-sm text-foreground">
+                <Typography.Paragraph size="sm">
                     {file?.name ?? "Drop a file here, or click to browse"}
-                </p>
-                <p className="mt-1 text-xs text-muted">
+                </Typography.Paragraph>
+                <Typography.Paragraph size="xs" color="muted">
                     Any file type — bytes go direct to MinIO, not through NestJS
-                </p>
+                </Typography.Paragraph>
             </div>
         </div>
     )

@@ -1,7 +1,6 @@
-/**
- * Inline SVG upload icon — zero external deps (required by lesson-ui.rules §6).
- */
-export function UploadIcon({ className }: { className?: string }): JSX.Element {
+interface UploadIconProps { className?: string }
+
+export const UploadIcon = ({ className }: UploadIconProps): JSX.Element => {
     return (
         <svg
             xmlns="http://www.w3.org/2000/svg"

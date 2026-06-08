@@ -8,7 +8,7 @@ export default defineConfig({
     plugins: [react(), tailwindcss()],
     server: {
         // Pin the dev port in source (not via CLI --port). Frontend runs on 3411.
-        port: 3411,
+        port: Number(process.env.FE_PORT ?? "3411"),
         host: "127.0.0.1",
         proxy: {
             "/upload": {

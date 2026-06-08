@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react"
 import useSWRMutation from "swr/mutation"
-import { Button, Chip, Spinner } from "@heroui/react"
+import { Button, Chip, Label, Spinner, Typography } from "@heroui/react"
 import { UploadIcon, DownloadIcon } from "../ui"
 import { FileDropzone } from "./FileDropzone"
 import {
@@ -27,7 +27,7 @@ import {
  *   download-link   — <a> href pointing to the presigned GET URL
  *   error-msg       — span showing the error message on failure
  */
-export function UploadClient(): JSX.Element {
+export const UploadClient = (): JSX.Element => {
     const [selectedFile, setSelectedFile] = useState<File | null>(null)
 
     // Status of the full upload flow.
@@ -112,10 +112,10 @@ export function UploadClient(): JSX.Element {
     const canUpload = selectedFile !== null && !isMutating
 
     return (
-        <div className="flex flex-col">
+        <div className="flex flex-col gap-6">
             {/* Status chip — top of form, same as L0 multer demo */}
             <div className="flex items-center gap-2">
-                <span className="text-sm font-medium text-foreground">Upload Status</span>
+                <Label>Upload Status</Label>
                 <Chip
                     data-testid="upload-status"
                     color={chipColor(status).textColor}
@@ -126,116 +126,101 @@ export function UploadClient(): JSX.Element {
                 </Chip>
             </div>
 
-            <div className="h-6" />
+            <div className="flex flex-col gap-3">
+                <FileDropzone
+                    file={selectedFile}
+                    onFileSelect={onFileSelect}
+                />
+                {selectedFile && (
+                    <Typography.Paragraph size="xs" color="muted">
+                        {selectedFile.name} — {selectedFile.type || "unknown MIME"}
+                    </Typography.Paragraph>
+                )}
 
-            <FileDropzone
-                file={selectedFile}
-                onFileSelect={onFileSelect}
-            />
-            {selectedFile && (
-                <p className="mt-1.5 text-xs text-muted">
-                    {selectedFile.name} — {selectedFile.type || "unknown MIME"}
-                </p>
-            )}
-
-            <div className="h-6" />
-
-            {/* Upload button */}
-            <Button
-                data-testid="upload-btn"
-                variant="primary"
-                isDisabled={!canUpload}
-                onPress={() => void trigger()}
-            >
-                <span className="flex items-center gap-2">
-                    {isMutating ? (
-                        <Spinner size="sm" color="current" />
-                    ) : (
-                        <UploadIcon />
-                    )}
-                    {isMutating ? "Uploading…" : "Upload via presigned URL"}
-                </span>
-            </Button>
+                {/* Upload button */}
+                <Button
+                    data-testid="upload-btn"
+                    variant="primary"
+                    className="w-fit"
+                    isDisabled={!canUpload}
+                    onPress={() => void trigger()}
+                >
+                    <span className="flex items-center gap-2">
+                        {isMutating ? (
+                            <Spinner size="sm" color="current" />
+                        ) : (
+                            <UploadIcon />
+                        )}
+                        {isMutating ? "Uploading…" : "Upload via presigned URL"}
+                    </span>
+                </Button>
+            </div>
 
             {/* Error message */}
             {status === "error" && errorMsg && (
-                <>
-                    <div className="h-3" />
-                    <span data-testid="error-msg" className="text-sm text-danger">
-                        {errorMsg}
-                    </span>
-                </>
+                <Typography.Paragraph data-testid="error-msg" size="sm" className="text-danger">
+                    {errorMsg}
+                </Typography.Paragraph>
             )}
 
             {/* Results after successful upload */}
             {status === "success" && (
-                <>
-                    <div className="h-6" />
-
+                <div className="flex flex-col gap-6">
                     {/* Step 1 result — presigned PUT info */}
                     {putInfo && (
-                        <div className="text-sm">
-                            <div className="text-xs font-semibold uppercase tracking-wide text-muted">
+                        <div className="flex flex-col gap-1.5">
+                            <Typography.Paragraph size="xs" color="muted" weight="semibold" className="uppercase tracking-wide">
                                 Step 1 — Presigned PUT URL received
-                            </div>
-                            <div className="h-2" />
-                            <div className="text-foreground">
+                            </Typography.Paragraph>
+                            <Typography.Paragraph size="sm">
                                 <span className="text-muted">Key: </span>
                                 <span data-testid="presign-key" className="font-mono break-all">
                                     {presignKey}
                                 </span>
-                            </div>
-                            <div className="h-1.5" />
-                            <div className="text-foreground">
+                            </Typography.Paragraph>
+                            <Typography.Paragraph size="sm">
                                 <span className="text-muted">Expires: </span>
                                 {putInfo.expiresInSeconds}s
-                            </div>
+                            </Typography.Paragraph>
                         </div>
                     )}
-
-                    <div className="h-4" />
 
                     {/* Step 2 result — MinIO PUT */}
                     {etag && (
-                        <div className="text-sm">
-                            <div className="text-xs font-semibold uppercase tracking-wide text-muted">
+                        <div className="flex flex-col gap-1.5">
+                            <Typography.Paragraph size="xs" color="muted" weight="semibold" className="uppercase tracking-wide">
                                 Step 2 — MinIO PUT complete (NestJS not involved)
-                            </div>
-                            <div className="h-2" />
-                            <div className="text-foreground">
+                            </Typography.Paragraph>
+                            <Typography.Paragraph size="sm">
                                 <span className="text-muted">ETag: </span>
                                 <span className="font-mono">{etag}</span>
-                            </div>
+                            </Typography.Paragraph>
                         </div>
                     )}
 
-                    <div className="h-3" />
-
                     {/* Step 3 result — presigned GET URL */}
                     {getInfo && downloadUrl && (
-                        <div className="text-sm">
-                            <div className="text-xs font-semibold uppercase tracking-wide text-muted">
+                        <div className="flex flex-col gap-1.5">
+                            <Typography.Paragraph size="xs" color="muted" weight="semibold" className="uppercase tracking-wide">
                                 Step 3 — Presigned GET URL (download)
-                            </div>
-                            <div className="h-2" />
-                            <div className="text-foreground">
+                            </Typography.Paragraph>
+                            <Typography.Paragraph size="sm">
                                 <span className="text-muted">Expires: </span>
                                 {getInfo.expiresInSeconds}s
-                            </div>
-                            <div className="h-2" />
+                            </Typography.Paragraph>
                             <a
                                 data-testid="download-link"
                                 href={downloadUrl}
                                 target="_blank"
                                 rel="noreferrer"
-                                className="inline-flex items-center gap-1.5 text-accent underline underline-offset-2"
+                                className="inline-flex w-fit items-center gap-1.5 text-accent underline underline-offset-2"
                             >
                                 <DownloadIcon className="h-3.5 w-3.5" />
                                 Download object from MinIO
                             </a>
                         </div>
                     )}
-                </>
+                </div>
             )}
         </div>
     )

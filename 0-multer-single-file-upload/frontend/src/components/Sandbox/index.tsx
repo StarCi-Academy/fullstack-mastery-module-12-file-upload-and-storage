@@ -7,6 +7,6 @@ import { UploadClient } from "../UploadClient"
  * renders the same client as Local. The split keeps the App layout structure uniform
  * across the entire course and the `?sandbox` switch harmless.
  */
-export function Sandbox(): JSX.Element {
+export const Sandbox = (): JSX.Element => {
     return <UploadClient />
 }

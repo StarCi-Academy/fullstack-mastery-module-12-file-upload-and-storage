@@ -6,6 +6,6 @@ import { UploadClient } from "../UploadClient"
  * This is the canonical product UI that runs on `npm run dev` and that the
  * Playwright specs drive.
  */
-export function Local(): JSX.Element {
+export const Local = (): JSX.Element => {
     return <UploadClient />
 }
