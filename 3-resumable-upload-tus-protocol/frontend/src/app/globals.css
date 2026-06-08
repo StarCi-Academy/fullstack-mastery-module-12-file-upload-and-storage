@@ -8,3 +8,20 @@ body {
   color: var(--foreground);
   font-family: system-ui, sans-serif;
 }
+
+/** Lesson demo inputs on page background — visible border, no field shadow. */
+.input-group,
+.input {
+  box-shadow: none !important;
+  border-width: 1px !important;
+  border-style: solid !important;
+  border-color: var(--border) !important;
+}
+
+/** Lesson demo cards — border, no shadow. */
+.card {
+  box-shadow: none !important;
+  border-width: 1px !important;
+  border-style: solid !important;
+  border-color: var(--border) !important;
+}

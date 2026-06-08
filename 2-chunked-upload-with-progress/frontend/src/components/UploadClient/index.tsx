@@ -193,7 +193,6 @@ export function UploadClient(): JSX.Element {
             </label>
             <div className="h-1.5" />
             <Input
-                variant="secondary"
                 value={sessionId}
                 onChange={(e) => setSessionId(e.target.value)}
                 placeholder="auto-filled after Upload"
